@@ -375,6 +375,8 @@ label.fld{font-size:13px;font-weight:600;color:var(--ink-soft);display:block;mar
 .push-prompt .pp-actions .btn{flex:1}
 /* Shifokor qabuli */
 .rc-play-only{display:none}
+#redeemCard{display:none}
+html.show-redeem #redeemCard{display:block}
 html.play-mode .rc-normal{display:none}
 html.play-mode .rc-play-only{display:block}
 .rc-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px;box-shadow:var(--shadow-sm);margin-bottom:14px}
@@ -835,7 +837,7 @@ html.play-mode .rc-play-only{display:block}
       </div>
     </div>
 
-    <div class="disc rc-play-only" id="redeemCard">
+    <div class="disc" id="redeemCard">
       <h3>🎟 Kod kiritish</h3>
       <p>Sizda obuna kodi bo'lsa, shu yerga kiriting.</p>
       <input type="text" id="redeemInput" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="64" placeholder="Kod" style="margin-top:6px">
@@ -978,11 +980,12 @@ const PLAY_MODE=(function(){
   return sessionStorage.getItem("orom:play")==="1";
  }catch(e){ return false; }
 })();
-if(PLAY_MODE) document.documentElement.classList.add("play-mode");   // Play nusxasida qabul narxlari/tavsifi yashiriladi (ular botda)
+if(PLAY_MODE) document.documentElement.classList.add("play-mode");
+try{ if(PLAY_MODE && sessionStorage.getItem("orom:showRedeem")==="1") document.documentElement.classList.add("show-redeem"); }catch(e){}   // Play nusxasida qabul narxlari/tavsifi yashiriladi (ular botda)
 /* Tekshiruvlar haqida ma'lumot bergan darslar oxiridagi yozuv (matnni faqat shu yerdan o'zgartiring) */
 const CLINIC_NOTE = "Agar siz tekshiruvlardan o'tmagan bo'lsangiz, klinikaga qabulga kelganingizda ham tekshiruvlardan o'tib ketishingiz mumkin. <strong>Bizda tekshiruvlar mavjud.</strong>";
 let receptionReturn=null;   // "Qabul turlari" sahifasidan "orqaga" qayerga qaytishini eslab turadi (masalan, dars sahifasiga)
-const APP_VERSION = "2026.10.04-h";   // har yangi nusxada o'zgartiriladi: Sozlamalar pastida ko'rinadi (eski nusxa keshdan chiqayotganini bilish uchun)
+const APP_VERSION = "2026.10.04-i";   // har yangi nusxada o'zgartiriladi: Sozlamalar pastida ko'rinadi (eski nusxa keshdan chiqayotganini bilish uchun)
 /* Server bergan Telegram havolasi faqat https://t.me/ (yoki telegram.me) bo'lsa ishlatiladi — boshqa manzilga yo'naltirib yuborishga qarshi */
 function safeTgLink(link){
  const v=String(link||"");
@@ -2061,7 +2064,16 @@ function renderSettings(){
    document.getElementById("deleteYesBtn").onclick=deleteAllMyData;
   }}
  {const tip=document.getElementById("pushChromeTip"); if(tip) tip.style.display=/Android/i.test(navigator.userAgent||"")?"":"none";}   // faqat Android uchun
- {const v=document.getElementById("appVersionLbl"); if(v) v.textContent="Ilova versiyasi: "+APP_VERSION+(PLAY_MODE?" · Play":"");}
+ {const v=document.getElementById("appVersionLbl"); if(v){
+   v.textContent="Ilova versiyasi: "+APP_VERSION+(PLAY_MODE?" · Play":"");
+   if(!v._rdm){ v._rdm=true; let taps=0, t0=0;
+    v.addEventListener("click",()=>{                       // Google tekshiruvchisi uchun yashirin kirish: 7 marta ketma-ket bosish
+     if(!PLAY_MODE) return;
+     const now=Date.now(); if(now-t0>4000) taps=0; t0=now; taps++;
+     if(taps>=7){ taps=0; document.documentElement.classList.add("show-redeem"); try{sessionStorage.setItem("orom:showRedeem","1");}catch(e){} toast("Kod kiritish ochildi"); }
+    });
+   }
+  }}
  const lotinBtn=document.getElementById("scriptLotinBtn");
  const kirillBtn=document.getElementById("scriptKirillBtn");
  const lightBtn=document.getElementById("themeLightBtn");
@@ -2267,7 +2279,7 @@ function renderPremium(){
     <p>Yopiq bo'limlar obuna egalari uchun ochiladi. Obunangiz bo'lsa, «Obunani tekshirish» tugmasini bosing yoki ilovaga qaytib kiring: yopiq bo'limlar o'zi ochiladi. Boshqa telefonda bo'lsangiz, Sozlamalarda «Telegram orqali kirish» ni bosing.</p>
   </div>
   <button class="btn btn-primary btn-block" style="margin-top:14px" id="checkSub">Obunani tekshirish</button>
-  <p class="tiny" style="text-align:left;padding:6px 2px 0">Kodingiz bo'lsa: Sozlamalar → «Kod kiritish».</p>`:`
+`:`
   <div class="sec-title" style="margin-top:4px">Tarifni tanlang</div>
   ${PLANS.map(p=>`<div class="price-card ${pickedPlan===p.id?'pick':''}" data-plan="${p.id}">
     <div class="pt"><h4>${p.name}</h4><span>${p.desc}</span></div>
