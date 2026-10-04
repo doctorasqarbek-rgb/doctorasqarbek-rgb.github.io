@@ -815,12 +815,20 @@ label.fld{font-size:13px;font-weight:600;color:var(--ink-soft);display:block;mar
       </div>
     </div>
 
+    <div class="disc" id="redeemCard">
+      <h3>🎟 Kod kiritish</h3>
+      <p>Sizda obuna kodi bo'lsa, shu yerga kiriting.</p>
+      <input type="text" id="redeemInput" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="64" placeholder="Kod" style="margin-top:6px">
+      <button class="btn btn-primary btn-block" id="redeemBtn" style="margin-top:10px">Kodni faollashtirish</button>
+      <p class="tiny" id="redeemMsg" style="text-align:left;padding:8px 0 0"></p>
+    </div>
+
     <div class="disc" id="deleteCard">
       <h3>🗑 Ma'lumotlarimni o'chirish</h3>
-      <p>Telefoningizdagi barcha yozuvlar (kundalik, test va mashq javoblari, saqlangan progress) hamda serverdagi progress, bildirishnoma va murojaat ma'lumotlari o'chiriladi. <strong>Obunangiz ham bekor bo'ladi.</strong> Bu amalni qaytarib bo'lmaydi.</p>
+      <p>Telefoningizdagi barcha yozuvlar (kundalik, test va mashq javoblari, saqlangan progress) hamda serverdagi progress, bildirishnoma va murojaat ma'lumotlari o'chiriladi. <strong>Faol obunangiz saqlanadi</strong>, u bekor bo'lmaydi. Bu amalni qaytarib bo'lmaydi.</p>
       <button class="btn btn-ghost btn-block" id="deleteDataBtn" style="margin-top:10px;color:#b3261e">Ma'lumotlarimni o'chirish</button>
       <div id="deleteConfirm" style="display:none;margin-top:10px">
-        <p class="tiny" style="text-align:left;padding:0 0 8px"><strong>Aniq o'chirilsinmi?</strong> Bu amalni qaytarib bo'lmaydi.</p>
+        <p class="tiny" style="text-align:left;padding:0 0 8px"><strong>Aniq o'chirilsinmi?</strong> Yozuvlaringiz tiklanmaydi. Obunangiz (agar bo'lsa) saqlanadi.</p>
         <div style="display:flex;gap:8px">
           <button class="btn btn-ghost btn-block" id="deleteNoBtn" style="flex:1">Bekor qilish</button>
           <button class="btn btn-primary btn-block" id="deleteYesBtn" style="flex:1;background:#b3261e">Ha, o'chirish</button>
@@ -932,10 +940,28 @@ const Store={mem:{},
    ravishda eski "namoyish" rejimida ishlashda davom etadi (haqiqiy to'lovsiz),
    shuning uchun backend hali tayyor bo'lmasa ham ilova buzilmaydi. */
 const BACKEND_URL = "https://orom-backend.onrender.com";
+/* ===== GOOGLE PLAY VERSIYASI ("faqat ko'rish" rejimi) =====
+   Google Play qoidasi: ilova ichida obunani Google Billing'dan boshqa usulda sotib bo'lmaydi va boshqa to'lov usuliga
+   yo'naltirib bo'lmaydi. Shuning uchun Play paketida narxlar, "To'lash" tugmalari va to'lov havolalari ko'rinmaydi:
+   ilova faqat obuna holatini tekshiradi va kontentni ochadi; obuna esa ilovadan tashqarida (Telegram bot) rasmiylashtiriladi.
+   Play paketi ochilganini aniqlash: (1) ilova ochilgan manba "android-app://<paket>" bo'lsa; (2) manzilda ?play=1 bo'lsa
+   (PWABuilder'da Start URL sifatida yoki brauzerda sinash uchun; ?play=0 — o'chiradi). Holat faqat shu sessiya uchun saqlanadi:
+   TWA ilovasi brauzer xotirasini bo'lishgani uchun doimiy saqlansa, boshqa ilovaga (to'g'ridan-to'g'ri APK) ta'sir qilardi. */
+const PLAY_PACKAGES=["uz.orom.app"];
+const PLAY_MODE=(function(){
+ try{
+  const ref=document.referrer||"";
+  if(PLAY_PACKAGES.some(p=>ref.indexOf("android-app://"+p)===0)) sessionStorage.setItem("orom:play","1");
+  const q=new URLSearchParams(location.search).get("play");
+  if(q==="1") sessionStorage.setItem("orom:play","1");
+  if(q==="0") sessionStorage.removeItem("orom:play");
+  return sessionStorage.getItem("orom:play")==="1";
+ }catch(e){ return false; }
+})();
 /* Tekshiruvlar haqida ma'lumot bergan darslar oxiridagi yozuv (matnni faqat shu yerdan o'zgartiring) */
 const CLINIC_NOTE = "Agar siz tekshiruvlardan o'tmagan bo'lsangiz, klinikaga qabulga kelganingizda ham tekshiruvlardan o'tib ketishingiz mumkin. <strong>Bizda tekshiruvlar mavjud.</strong>";
 let receptionReturn=null;   // "Qabul turlari" sahifasidan "orqaga" qayerga qaytishini eslab turadi (masalan, dars sahifasiga)
-const APP_VERSION = "2026.10.04-c";   // har yangi nusxada o'zgartiriladi: Sozlamalar pastida ko'rinadi (eski nusxa keshdan chiqayotganini bilish uchun)
+const APP_VERSION = "2026.10.04-d";   // har yangi nusxada o'zgartiriladi: Sozlamalar pastida ko'rinadi (eski nusxa keshdan chiqayotganini bilish uchun)
 /* Server bergan Telegram havolasi faqat https://t.me/ (yoki telegram.me) bo'lsa ishlatiladi — boshqa manzilga yo'naltirib yuborishga qarshi */
 function safeTgLink(link){
  const v=String(link||"");
@@ -956,7 +982,7 @@ async function setDarkTheme(on){
 
 /* Ba'zi lotin brend nomlari kirillda ham o'z yozuvida qoladi (harfma-harf o'girilsa "Чроме", "иОС" kabi buzilib ketadi).
    Nomdan keyingi qo'shimcha (Chrome'ni, iOS'da) apostrofi chiroyli ’ ga almashtiriladi: Chrome’ни, iOS’да. */
-const KEEP_LATIN=["Play Market","Chrome","iOS"];
+const KEEP_LATIN=["Play Market","Chrome","iOS","Doktor_Ergashev_bot"];   // bot nomi (@username) har doim lotinda qolishi shart
 const _keepRe=new RegExp("\\b("+KEEP_LATIN.join("|")+")\\b(['\u2018\u2019]?)","g");
 function latin2cyrillic(text){
  if(!text) return text;
@@ -1186,6 +1212,7 @@ function renderContentPending(viewId,key,eyebrow,title,failed,retry){
 /* "To'lash" tugmasi bosilganda chaqiriladi. Buyurtma yaratib, foydalanuvchini
    Payme yoki Click to'lov sahifasiga yo'naltiradi. */
 async function startCheckout(provider, plan){
+ if(PLAY_MODE) return;       // Play versiyasida ilova ichida to'lov YO'Q
  if(!backendReady()){
   // Backend hali ulanmagan — eski namoyish rejimi (haqiqiy to'lovsiz ochadi)
   await setPro(true);
@@ -1274,11 +1301,13 @@ async function enablePushNotifications(){
 }
 
 /* Ma'lumotlarni o'chirish (Google Play talabi): avval server, muvaffaqiyatli bo'lsagina telefondagi ma'lumot tozalanadi
-   (server xato bersa, deviceId saqlanib qoladi va foydalanuvchi qayta urinib ko'ra oladi). */
+   (server xato bersa, deviceId saqlanib qoladi va foydalanuvchi qayta urinib ko'ra oladi).
+   Faol obuna bekor QILINMAYDI: server buni saqlaydi (keptSubscription) va deviceId telefonda qoladi. */
 async function deleteAllMyData(){
  const yes=document.getElementById("deleteYesBtn"), no=document.getElementById("deleteNoBtn");
  yes.disabled=true; no.disabled=true;
  try{
+  let keepSub=false;
   if(backendReady()){
    const deviceId=await getDeviceId();
    const r=await fetch(BACKEND_URL+"/api/delete-data",{
@@ -1286,15 +1315,18 @@ async function deleteAllMyData(){
     body:JSON.stringify({deviceId,confirm:true})
    });
    if(!r.ok) throw new Error("server "+r.status);
+   const jj=await r.json().catch(()=>({}));
+   keepSub=!!jj.keptSubscription;
   }
   try{
    const reg=await Promise.race([navigator.serviceWorker.ready,new Promise(res=>setTimeout(()=>res(null),3000))]);
    const sub=reg&&await reg.pushManager.getSubscription();
    if(sub) await sub.unsubscribe();
   }catch(e){ /* push yo'q — davom etamiz */ }
-  try{ Object.keys(localStorage).filter(k=>k.startsWith("orom:")).forEach(k=>localStorage.removeItem(k)); }catch(e){}
+  try{ Object.keys(localStorage).filter(k=>k.startsWith("orom:")&&!(keepSub&&k==="orom:deviceId")).forEach(k=>localStorage.removeItem(k)); }catch(e){}
   Store.mem={};
-  toast("Ma'lumotlaringiz o'chirildi");
+  if(keepSub) await Store.set("deviceId",await getDeviceId());
+  toast(keepSub?"Ma'lumotlaringiz o'chirildi. Obunangiz saqlandi.":"Ma'lumotlaringiz o'chirildi");
   setTimeout(()=>location.reload(),1200);
  }catch(e){
   console.log("O'chirishda xato:",e);
@@ -1377,6 +1409,7 @@ async function openTelegramCourseChannel(){
 
 /* "To'lash uchun botga o'tish" — Telegram botni tanlangan tarif bilan ochadi. */
 async function payViaBot(){
+ if(PLAY_MODE) return;       // Play versiyasida to'lovga yo'naltirish YO'Q
  if(!backendReady()){
   toast("Backend hali ulanmagan — to'lov hozircha ishlamaydi");
   return;
@@ -1402,6 +1435,7 @@ let pickedUpgrade=null, upgradeQuote=null;
 const fmtSom=n=>Number(n).toLocaleString("ru-RU").replace(/\u00a0|\u202f/g," ")+" so'm";
 const fmtUzDate=ms=>new Date(ms).toLocaleDateString("ru-RU",{timeZone:"Asia/Tashkent"});
 async function loadUpgradeCard(){
+ if(PLAY_MODE) return;       // Play versiyasida narx va to'lovga yo'naltirish YO'Q
  const el=document.getElementById("upgradeCard");
  if(!el||!backendReady()) return;
  try{
@@ -1452,7 +1486,7 @@ async function checkSubscriptionNow(){
  await refreshProFromServer();
  renderPremium();renderHomeMods();renderCourse();refreshAll();
  if(isPro) toast((!was||wasTier!==userTier)?"Obunangiz faollashdi!":"Obuna faol");
- else toast("Hali tasdiqlanmagan. Chekni botga yuborgan bo'lsangiz, administrator tasdiqlashini kuting.");
+ else toast(PLAY_MODE?"Obuna hali faollashmagan":"Hali tasdiqlanmagan. Chekni botga yuborgan bo'lsangiz, administrator tasdiqlashini kuting.");
 }
 
 /* Foydalanuvchi Telegramdan ilovaga qaytganda obuna holati o'zi yangilanadi. */
@@ -1811,7 +1845,7 @@ async function renderHomePushPrompt(){
  if(state==="denied"){
   el.innerHTML=`<div class="push-prompt">
    <div class="pp-title">🔔 Bildirishnoma o'chirilgan</div>
-   <p>${PUSH_REASON} Telefon sozlamalarida yoqing: Sozlamalar → Ilovalar → Orom → Bildirishnomalar.</p>
+   <p>${PUSH_REASON} Telefon sozlamalarida yoqing: Sozlamalar → Ilovalar → Orom → Bildirishnomalar. Yoqilmasa: Chrome → ⋮ → Sozlamalar → Sayt sozlamalari → Bildirishnomalar → doctorasqarbek-rgb.github.io → Ruxsat berish.</p>
   </div>`;
   return;
  }
@@ -1843,7 +1877,7 @@ function fillPushGate(denied){
  document.getElementById("pgIcon").textContent=denied?"⚙️":"🔔";
  document.getElementById("pgTitle").textContent=denied?"Bildirishnoma o'chirilgan":"Iltimos, bildirishnomani yoqing";
  document.getElementById("pgText").textContent=denied
-  ? PUSH_REASON+" Buning uchun Chrome'da yoqing: Chrome → ⋮ → Sozlamalar → Sayt sozlamalari → Bildirishnomalar → doctorasqarbek-rgb.github.io → Ruxsat berish. Keyin ilovaga qaytib, Sozlamalar bo'limida «Bildirishnomalarni yoqish» tugmasini bosing."
+  ? PUSH_REASON+" Buning uchun telefon sozlamalarida yoqing: Sozlamalar → Ilovalar → Orom → Bildirishnomalar → Ruxsat berish. Yoqilmasa: Chrome → ⋮ → Sozlamalar → Sayt sozlamalari → Bildirishnomalar → doctorasqarbek-rgb.github.io → Ruxsat berish. Keyin ilovaga qaytib, Sozlamalar bo'limida «Bildirishnomalarni yoqish» tugmasini bosing."
   : PUSH_REASON+" Iltimos, bildirishnomani yoqing.";
  const en=document.getElementById("pgEnable"), later=document.getElementById("pgLater");
  en.textContent=denied?"Tushundim":"🔔 Bildirishnomani yoqish";
@@ -1903,7 +1937,7 @@ function renderSettings(){
    document.getElementById("deleteYesBtn").onclick=deleteAllMyData;
   }}
  {const tip=document.getElementById("pushChromeTip"); if(tip) tip.style.display=/Android/i.test(navigator.userAgent||"")?"":"none";}   // faqat Android uchun
- {const v=document.getElementById("appVersionLbl"); if(v) v.textContent="Ilova versiyasi: "+APP_VERSION;}
+ {const v=document.getElementById("appVersionLbl"); if(v) v.textContent="Ilova versiyasi: "+APP_VERSION+(PLAY_MODE?" · Play":"");}
  const lotinBtn=document.getElementById("scriptLotinBtn");
  const kirillBtn=document.getElementById("scriptKirillBtn");
  const lightBtn=document.getElementById("themeLightBtn");
@@ -2043,7 +2077,7 @@ function renderHomeProBanner(){
  if(isPro){el.innerHTML="";return;}
  const st=courseStats();
  el.innerHTML=`<div class="home-pro" id="homeProGo">
-   <div class="txt"><b>Obunani oching</b><span>Yana ${st.premMods} bo'lim, ${st.premLessons} dars, mashqlar va video darslar</span></div>
+   <div class="txt"><b>${PLAY_MODE?"Obuna bilan ochiladigan bo'limlar":"Obunani oching"}</b><span>Yana ${st.premMods} bo'lim, ${st.premLessons} dars, mashqlar va video darslar</span></div>
    <div class="go">→</div></div>`;
  document.getElementById("homeProGo").onclick=()=>{renderPremium();show("premium");};
 }
@@ -2103,6 +2137,13 @@ function renderPremium(){
     </ul>
   </div>
 
+  ${PLAY_MODE?`
+  <div class="disc" style="margin-top:4px">
+    <h3>Obunani qanday olish mumkin</h3>
+    <p>Obuna rasmiy Telegram botimiz orqali rasmiylashtiriladi: <b>@${BOT_USERNAME}</b>. Obuna faollashgach, shu sahifada «Obunani tekshirish» tugmasini bosing yoki ilovaga qaytib kiring: yopiq bo'limlar o'zi ochiladi.</p>
+  </div>
+  <button class="btn btn-primary btn-block" style="margin-top:14px" id="checkSub">Obunani tekshirish</button>
+  <p class="tiny" style="text-align:left;padding:6px 2px 0">Kodingiz bo'lsa: Sozlamalar → «Kod kiritish».</p>`:`
   <div class="sec-title" style="margin-top:4px">Tarifni tanlang</div>
   ${PLANS.map(p=>`<div class="price-card ${pickedPlan===p.id?'pick':''}" data-plan="${p.id}">
     <div class="pt"><h4>${p.name}</h4><span>${p.desc}</span></div>
@@ -2114,11 +2155,12 @@ function renderPremium(){
   ${ONLINE_PAY?`<button class="btn btn-primary btn-block" style="margin-top:8px" id="buyPayme">Payme orqali to'lash</button>
   <button class="btn btn-primary btn-block" style="margin-top:8px" id="buyClick">Click orqali to'lash</button>`:""}
   <button class="btn btn-soft btn-block" style="margin-top:14px" id="checkSub">Obunani tekshirish</button>
-  <p class="tiny" style="text-align:left;padding:6px 2px 0">To'lov tasdiqlangach, shu tugmani bosing yoki ilovaga qaytib kiring: obuna o'zi yangilanadi.</p>`;
+  <p class="tiny" style="text-align:left;padding:6px 2px 0">To'lov tasdiqlangach, shu tugmani bosing yoki ilovaga qaytib kiring: obuna o'zi yangilanadi.</p>`}`;
 
+ document.getElementById("checkSub").onclick=checkSubscriptionNow;
+ if(PLAY_MODE) return;
  el.querySelectorAll(".price-card").forEach(c=>c.onclick=()=>{pickedPlan=c.dataset.plan;renderPremium();show("premium");});
  document.getElementById("payViaBot").onclick=payViaBot;
- document.getElementById("checkSub").onclick=checkSubscriptionNow;
  if(ONLINE_PAY){
   document.getElementById("buyPayme").onclick=()=>startCheckout("payme",pickedPlan);
   document.getElementById("buyClick").onclick=()=>startCheckout("click",pickedPlan);
@@ -2133,7 +2175,9 @@ async function loadGroupAccess(){
   const res=await fetch(BACKEND_URL+"/api/group-invite?deviceId="+encodeURIComponent(deviceId));
   const data=await res.json();
   if(res.status===403){
-   slot.innerHTML=`<p class="tiny" style="text-align:left;padding:0">Yopiq guruh (jonli darslar shu yerda o'tkaziladi) — faqat <b>Premium</b> tarifda mavjud. Yuqoridagi «Premiumga o'tish» orqali narx farqini to'lab o'tishingiz mumkin.</p>`;
+   slot.innerHTML=PLAY_MODE
+    ? `<p class="tiny" style="text-align:left;padding:0">Yopiq guruh (jonli darslar shu yerda o'tkaziladi) — faqat <b>Premium</b> tarifda mavjud.</p>`
+    : `<p class="tiny" style="text-align:left;padding:0">Yopiq guruh (jonli darslar shu yerda o'tkaziladi) — faqat <b>Premium</b> tarifda mavjud. Yuqoridagi «Premiumga o'tish» orqali narx farqini to'lab o'tishingiz mumkin.</p>`;
    return;
   }
   if(!res.ok) throw new Error();
@@ -3475,6 +3519,31 @@ if("serviceWorker" in navigator && navigator.serviceWorker && navigator.serviceW
  // Ilova ochiq paytda bildirishnoma bosilsa, service worker kerakli havolani shu yerga yuboradi
  navigator.serviceWorker.addEventListener("message",e=>{ if(e.data&&e.data.type==="orom-go") handleDeepLink(e.data.url); });
 }
+
+/* ===== KOD KIRITISH (obuna kodi; Google tekshiruvchisi va sovg'a kodlari uchun) =====
+   Kod serverda tekshiriladi va ilova faylida YO'Q. */
+async function redeemCode(){
+ const input=document.getElementById("redeemInput"), msg=document.getElementById("redeemMsg"), btn=document.getElementById("redeemBtn");
+ const code=(input.value||"").trim();
+ const say=(t,good)=>{ msg.textContent=t; msg.style.color=good?"var(--sage-deep, #3f7d5b)":"var(--danger, #b3412f)"; };
+ if(!code){ say("Kodni kiriting",false); return; }
+ if(!backendReady()){ say("Internet yoki server ulanmagan",false); return; }
+ btn.disabled=true; say("Tekshirilmoqda...",true);
+ try{
+  const deviceId=await getDeviceId();
+  const r=await fetch(BACKEND_URL+"/api/redeem",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({deviceId,code})});
+  const j=await r.json().catch(()=>({}));
+  if(r.ok){
+   input.value=""; say("Obuna faollashdi ✅",true); toast("Obuna faollashdi!");
+   await refreshProFromServer();
+   renderPremium();renderHomeMods();renderCourse();refreshAll();
+  } else if(r.status===429) say("Juda ko'p urinish. Keyinroq urinib ko'ring.",false);
+  else say(j.error||"Kod noto'g'ri yoki muddati o'tgan",false);
+ }catch(e){ say("Internet aloqasi yo'q. Qayta urinib ko'ring.",false); }
+ finally{ btn.disabled=false; }
+}
+document.getElementById("redeemBtn").onclick=redeemCode;
+document.getElementById("redeemInput").addEventListener("keydown",e=>{ if(e.key==="Enter") redeemCode(); });
 
 /* ===== ESLATMALAR UCHUN PROGRESS =====
    Serverga FAQAT xarakter mashqlarining id lari va bajarilgan kunlar soni yuboriladi (shaxsiy matn — kundalik, fikrlar — hech qachon).
