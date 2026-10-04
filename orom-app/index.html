@@ -985,7 +985,7 @@ try{ if(PLAY_MODE && sessionStorage.getItem("orom:showRedeem")==="1") document.d
 /* Tekshiruvlar haqida ma'lumot bergan darslar oxiridagi yozuv (matnni faqat shu yerdan o'zgartiring) */
 const CLINIC_NOTE = "Agar siz tekshiruvlardan o'tmagan bo'lsangiz, klinikaga qabulga kelganingizda ham tekshiruvlardan o'tib ketishingiz mumkin. <strong>Bizda tekshiruvlar mavjud.</strong>";
 let receptionReturn=null;   // "Qabul turlari" sahifasidan "orqaga" qayerga qaytishini eslab turadi (masalan, dars sahifasiga)
-const APP_VERSION = "2026.10.04-i";   // har yangi nusxada o'zgartiriladi: Sozlamalar pastida ko'rinadi (eski nusxa keshdan chiqayotganini bilish uchun)
+const APP_VERSION = "2026.10.04-j";   // har yangi nusxada o'zgartiriladi: Sozlamalar pastida ko'rinadi (eski nusxa keshdan chiqayotganini bilish uchun)
 /* Server bergan Telegram havolasi faqat https://t.me/ (yoki telegram.me) bo'lsa ishlatiladi — boshqa manzilga yo'naltirib yuborishga qarshi */
 function safeTgLink(link){
  const v=String(link||"");
@@ -2276,9 +2276,10 @@ function renderPremium(){
   ${PLAY_MODE?`
   <div class="disc" style="margin-top:4px">
     <h3>Obuna egalari uchun</h3>
-    <p>Yopiq bo'limlar obuna egalari uchun ochiladi. Obunangiz bo'lsa, «Obunani tekshirish» tugmasini bosing yoki ilovaga qaytib kiring: yopiq bo'limlar o'zi ochiladi. Boshqa telefonda bo'lsangiz, Sozlamalarda «Telegram orqali kirish» ni bosing.</p>
+    <p>Yopiq bo'limlar obuna egalari uchun ochiladi. Obunangiz bo'lsa, Telegram orqali kiring: yopiq bo'limlar o'zi ochiladi.</p>
   </div>
-  <button class="btn btn-primary btn-block" style="margin-top:14px" id="checkSub">Obunani tekshirish</button>
+  <button class="btn btn-primary btn-block" style="margin-top:14px" id="tgLoginBtn">✈️ Telegram orqali kirish</button>
+  <button class="btn btn-soft btn-block" style="margin-top:8px" id="checkSub">Obunani tekshirish</button>
 `:`
   <div class="sec-title" style="margin-top:4px">Tarifni tanlang</div>
   ${PLANS.map(p=>`<div class="price-card ${pickedPlan===p.id?'pick':''}" data-plan="${p.id}">
@@ -2291,9 +2292,11 @@ function renderPremium(){
   ${ONLINE_PAY?`<button class="btn btn-primary btn-block" style="margin-top:8px" id="buyPayme">Payme orqali to'lash</button>
   <button class="btn btn-primary btn-block" style="margin-top:8px" id="buyClick">Click orqali to'lash</button>`:""}
   <button class="btn btn-soft btn-block" style="margin-top:14px" id="checkSub">Obunani tekshirish</button>
+  <button class="btn btn-ghost btn-block" style="margin-top:6px" id="tgLoginBtn">Botda to'lagan bo'lsangiz: Telegram orqali kirish</button>
   <p class="tiny" style="text-align:left;padding:6px 2px 0">To'lov tasdiqlangach, shu tugmani bosing yoki ilovaga qaytib kiring: obuna o'zi yangilanadi.</p>`}`;
 
  document.getElementById("checkSub").onclick=checkSubscriptionNow;
+ {const tl=document.getElementById("tgLoginBtn"); if(tl) tl.onclick=startTgLogin;}
  if(PLAY_MODE) return;
  el.querySelectorAll(".price-card").forEach(c=>c.onclick=()=>{pickedPlan=c.dataset.plan;renderPremium();show("premium");});
  document.getElementById("payViaBot").onclick=payViaBot;
