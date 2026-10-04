@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Orom — Maxfiylik siyosati / Политика конфиденциальности</title>
+<meta name="robots" content="index,follow">
+<style>
+  :root{
+    --bg:#F6F5F1; --card:#FFFFFF; --text:#26283A; --muted:#6B6E85; --primary:#5566A6;
+    --line:#E3E2DC; --soft:#ECEEF8; --warn-bg:#FFF4E5; --warn:#8A5A12;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --bg:#16171F; --card:#1F2029; --text:#E9E9F1; --muted:#9A9DB5; --primary:#9AA7E8;
+           --line:#2E3040; --soft:#262838; --warn-bg:#2B2418; --warn:#E5C07B; }
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font:16px/1.65 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    -webkit-text-size-adjust:100%;
+  }
+  .wrap{max-width:760px; margin:0 auto; padding:28px 18px 64px}
+  header{display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:6px}
+  .brand{display:flex; align-items:center; gap:10px}
+  .logo{
+    width:38px; height:38px; border-radius:12px; background:var(--primary);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .logo i{width:16px; height:16px; border:3px solid #fff; border-radius:50%; display:block}
+  .brand b{font:600 22px/1 Georgia,"Times New Roman",serif; letter-spacing:.2px}
+  .lang{display:flex; gap:6px}
+  .lang button{
+    font:600 14px/1 inherit; font-family:inherit; cursor:pointer;
+    border:1px solid var(--line); background:var(--card); color:var(--text);
+    padding:9px 14px; border-radius:10px;
+  }
+  .lang button[aria-pressed="true"]{background:var(--primary); border-color:var(--primary); color:#fff}
+  h1{font:600 30px/1.2 Georgia,"Times New Roman",serif; margin:22px 0 6px}
+  .upd{color:var(--muted); font-size:14px; margin:0 0 20px}
+  h2{font:600 20px/1.3 Georgia,"Times New Roman",serif; margin:34px 0 8px; padding-top:6px}
+  p{margin:8px 0}
+  ul{margin:8px 0; padding-left:22px}
+  li{margin:5px 0}
+  a{color:var(--primary)}
+  .box{background:var(--card); border:1px solid var(--line); border-radius:16px; padding:16px 18px; margin:14px 0}
+  .note{background:var(--soft); border-radius:14px; padding:14px 16px; margin:14px 0}
+  .warn{background:var(--warn-bg); color:var(--warn); border-radius:14px; padding:14px 16px; margin:14px 0}
+  table{width:100%; border-collapse:collapse; margin:10px 0; font-size:15px}
+  th,td{text-align:left; vertical-align:top; padding:9px 10px; border-bottom:1px solid var(--line)}
+  th{color:var(--muted); font-weight:600; font-size:13px; text-transform:uppercase; letter-spacing:.4px}
+  .tbl{overflow-x:auto}
+  nav.toc{display:flex; flex-wrap:wrap; gap:8px; margin:6px 0 4px}
+  nav.toc a{font-size:14px; text-decoration:none; background:var(--card); border:1px solid var(--line); padding:7px 12px; border-radius:999px}
+  [data-l]{display:none}
+  html[lang="uz"] [data-l="uz"], html[lang="ru"] [data-l="ru"]{display:block}
+  html[lang="uz"] span[data-l="uz"], html[lang="ru"] span[data-l="ru"]{display:inline}
+  html[lang="uz"] li[data-l="uz"], html[lang="ru"] li[data-l="ru"]{display:list-item}
+  html[lang="uz"] table[data-l="uz"], html[lang="ru"] table[data-l="ru"]{display:table}
+  html[lang="uz"] nav[data-l="uz"], html[lang="ru"] nav[data-l="ru"]{display:flex}
+  footer{margin-top:40px; color:var(--muted); font-size:14px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="brand"><div class="logo"><i></i></div><b>Orom</b></div>
+  <div class="lang" role="group" aria-label="Til / Язык">
+    <button id="bUz" aria-pressed="true">O'zbekcha</button>
+    <button id="bRu" aria-pressed="false">Русский</button>
+  </div>
+</header>
+
+<!-- ======================= O'ZBEKCHA ======================= -->
+<div data-l="uz">
+  <h1>Maxfiylik siyosati</h1>
+  <p class="upd">So'nggi yangilanish: 2026-yil 4-oktabr</p>
+
+  <nav class="toc" data-l="uz">
+    <a href="#u-kim">Biz kimmiz</a>
+    <a href="#u-qurilma">Telefonda qoladigan</a>
+    <a href="#u-server">Serverda saqlanadigan</a>
+    <a href="#u-bot">Telegram bot</a>
+    <a href="#u-uchinchi">Uchinchi tomonlar</a>
+    <a href="#delete">Ma'lumotni o'chirish</a>
+  </nav>
+
+  <h2 id="u-kim">1. Biz kimmiz</h2>
+  <p>«Orom» — o'z-o'ziga yordam beruvchi psixoterapiya ilovasi (veb-ilova va Android ilovasi) hamda unga bog'langan Telegram bot (@Doktor_Ergashev_bot). Ma'lumotlar operatori:</p>
+  <div class="box">
+    <b>Asqarbek Ergashev</b><br>
+    Aloqa: <a href="mailto:doctorasqarbek@gmail.com">doctorasqarbek@gmail.com</a>
+  </div>
+  <div class="note">Orom tibbiy xizmat yoki davolash emas. Ilova shifokor yoki psixolog bilan shaxsiy maslahat o'rnini bosmaydi. Og'ir holatda yoki o'zingizga zarar yetkazish fikri bo'lsa, zudlik bilan mutaxassisga yoki mahalliy favqulodda yordam xizmatiga murojaat qiling.</div>
+
+  <h2 id="u-qurilma">2. Faqat telefoningizda qoladigan ma'lumotlar</h2>
+  <p>Quyidagilar <b>faqat sizning qurilmangizda</b> saqlanadi va serverimizga <b>yuborilmaydi</b>:</p>
+  <ul>
+    <li>kundalik va kayfiyat yozuvlari, fikr daftari, mashq va test javoblaringiz;</li>
+    <li>mashqlarda yozgan barcha shaxsiy matnlaringiz;</li>
+    <li>ilova sozlamalari (yozuv turi, qorong'u rejim).</li>
+  </ul>
+  <p><b>Istisno: «Kunlik reja».</b> Bu funksiya bildirishnomani vaqtida yuborishi uchun reja vazifalarining vaqti va matni serverda saqlanadi (3-bandga qarang).</p>
+  <p>Android ilovasi yozuvlarni Chrome brauzerining sayt xotirasida saqlaydi, shuning uchun ilovani o'chirib tashlash bu yozuvlarni o'chirmaydi (ilovani qayta o'rnatsangiz, ular qaytadi). Ularni o'chirish uchun ilovadagi <i>Sozlamalar → «Ma'lumotlarimni o'chirish»</i> tugmasidan foydalaning yoki Chrome'da <i>Sozlamalar → Sayt sozlamalari → Barcha saytlar → doctorasqarbek-rgb.github.io → Ma'lumotlarni tozalash</i> ni bajaring. Brauzer ma'lumotlarini tozalash yozuvlarni qaytarib bo'lmaydigan tarzda o'chiradi.</p>
+
+  <h2 id="u-server">3. Serverda saqlanadigan ma'lumotlar</h2>
+  <p>Ilova ishlashi uchun bizning serverimizda (Render) quyidagilar saqlanadi:</p>
+  <div class="tbl"><table data-l="uz">
+    <tr><th>Ma'lumot</th><th>Nima uchun</th></tr>
+    <tr><td>Tasodifiy qurilma identifikatori va qisqa kod (ism, telefon yoki email talab qilinmaydi)</td><td>Obunangizni qurilmangiz bilan bog'lash, to'lovni tasdiqlash</td></tr>
+    <tr><td>Telegram ID (faqat «Telegram orqali kirish»ni o'zingiz tanlasangiz; ism va telefon olinmaydi)</td><td>Obunangizni akkauntingizga bog'lash va boshqa telefonda tiklash</td></tr>
+    <tr><td>Obuna holati: tarif, tugash sanasi</td><td>Pullik bo'limlarni ochish</td></tr>
+    <tr><td>To'lov yozuvlari: buyurtma raqami, tarif, summa, to'lov turi, holat, sana. Bank karta ma'lumotlari bizda saqlanmaydi</td><td>To'lovni hisobga olish va tasdiqlash</td></tr>
+    <tr><td>Bildirishnoma obunasi (brauzer push manzili) va oxirgi faollik vaqti</td><td>Eslatmalarni yuborish (faqat siz yoqsangiz)</td></tr>
+    <tr><td>Mashq progressi: bugun bajarilgan xarakter mashqlari va jami kunlar soni (matnsiz)</td><td>Eslatmalarni moslashtirish</td></tr>
+    <tr><td>«Kunlik reja»: har soatga yozgan vazifangiz matni, vaqti va bajarildi belgisi (faqat shu funksiyadan foydalansangiz)</td><td>Vazifa vaqti kelganda bildirishnoma yuborish va bajarilmaganlarni kechqurun eslatish. Sanadan 3 kun o'tgach avtomatik o'chiriladi</td></tr>
+    <tr><td>«Murojaat» orqali o'zingiz yuborgan telefon raqam va izoh</td><td>Siz bilan bog'lanish</td></tr>
+  </table></div>
+  <p>Biz ma'lumotlaringizni <b>sotmaymiz</b>, reklama maqsadida ishlatmaymiz va reklama yoki analitika xizmatlariga uzatmaymiz.</p>
+
+  <h2 id="u-bot">4. Telegram bot</h2>
+  <p>Obuna to'lovi va yordam Telegram bot orqali amalga oshiriladi. Bot Telegram orqali quyidagilarni oladi va saqlaydi:</p>
+  <ul>
+    <li>Telegram ID, username va ismingiz;</li>
+    <li>obuna tarifi va sanalari, ilovadagi qisqa kodingiz bilan bog'lanish;</li>
+    <li>kutilayotgan to'lovlar va buyurtmalar (tarif, summa, holat);</li>
+    <li>botdagi testlar bo'yicha faqat test turi va topshirilgan sana (natijalar saqlanmaydi).</li>
+  </ul>
+  <p>To'lov cheki rasmi bazaga yozilmaydi: u Telegram orqali faqat adminga (Asqarbek Ergashev) yetkaziladi va to'lovni tasdiqlash uchun ko'riladi. Agar siz bemor sifatida shifokorga savol yozsangiz, savolingiz va unga ilovangan rasm faqat shifokor ko'rishi uchun yopiq yordam guruhiga yuboriladi va ilova ma'lumotlari bilan aralashtirilmaydi.</p>
+  <p>Chek tekshiruvida sun'iy intellekt xizmati ishlatilmaydi.</p>
+
+  <h2 id="u-uchinchi">5. Uchinchi tomon xizmatlari</h2>
+  <ul>
+    <li><b>Render</b> — server va bazani joylashtirish.</li>
+    <li><b>GitHub Pages</b> — ilova sahifalarini yetkazib berish.</li>
+    <li><b>Telegram</b> — bot, to'lov cheki va yopiq kanal/guruhlar.</li>
+    <li><b>Brauzer push xizmatlari</b> (Google, Apple, Mozilla) — bildirishnoma yetkazish. Bildirishnoma matni qurilmangizga shu xizmatlar orqali o'tadi.</li>
+    <li><b>Click va Payme</b> — to'lov tizimlari ulangan taqdirda to'lov shu tizimlar orqali amalga oshiriladi. Karta ma'lumotlarini ular qayta ishlaydi, biz ko'rmaymiz.</li>
+    <li><b>YouTube</b> (youtube-nocookie) — ayrim video darslar ko'rsatilganda. <b>Google Fonts</b> — shriftlarni yuklash. Bunda xizmat sizning IP manzilingizni ko'rishi mumkin.</li>
+  </ul>
+  <p>Ilovada analitika, reklama yoki kuzatuv (tracking) kutubxonalari yo'q.</p>
+
+  <h2>6. Saqlash muddati</h2>
+  <p>Serverdagi ma'lumotlar siz o'chirishni so'ramaguningizcha saqlanadi, <b>«Kunlik reja» vazifalari bundan mustasno: ular sanadan 3 kun o'tgach avtomatik o'chiriladi.</b> To'lov yozuvlari buxgalteriya hisobi uchun qonunchilik talab qilgan muddat davomida saqlanadi va o'chirishdan keyin shaxsingizga bog'lanmagan (anonim) holda qoladi.</p>
+
+  <h2>7. Xavfsizlik</h2>
+  <p>Ilova va server o'rtasidagi aloqa HTTPS orqali shifrlanadi. Admin imkoniyatlari maxfiy kalit bilan himoyalangan. Hech bir tizim 100% xavfsiz emas, lekin ma'lumotni minimal darajada yig'ishga harakat qilamiz.</p>
+
+  <h2>8. Bolalar</h2>
+  <p>Orom 18 yoshdan kichik bolalarga mo'ljallanmagan va biz ularning ma'lumotini bila turib yig'maymiz.</p>
+
+  <h2 id="delete">9. Ma'lumotlarni o'chirish</h2>
+  <div class="box">
+    <p><b>Ilova ichida:</b> <i>Sozlamalar → «Ma'lumotlarimni o'chirish»</i>. Bu quyidagilarni o'chiradi:</p>
+    <ul>
+      <li>telefondagi barcha yozuvlar va sozlamalar;</li>
+      <li>serverdagi mashq progressi, kunlik reja, bildirishnoma obunasi va murojaatlar.</li>
+    </ul>
+    <p>Faol obunangiz bo'lsa, u <b>bekor qilinmaydi</b>: xizmatni davom ettirish uchun qurilma identifikatori, Telegram akkauntga bog'lanish (agar kirgan bo'lsangiz), obuna va to'lov yozuvi saqlanib qoladi. Telegram akkauntdan faqat shu telefonni uzish uchun: <i>Sozlamalar → «Telegram akkaunt» → Chiqish</i>.</p>
+  </div>
+  <div class="box">
+    <p><b>To'liq o'chirish (obuna, to'lov yozuvlari va Telegram bot ma'lumotlari ham):</b> <a href="mailto:doctorasqarbek@gmail.com?subject=Orom%3A%20ma%27lumotlarni%20o%27chirish">doctorasqarbek@gmail.com</a> manziliga yozing yoki Telegramdagi @Doktor_Ergashev_bot ga murojaat qiling. Xatda ilovadagi «Mening kodim» yoki Telegram username'ingizni ko'rsating. So'rovni <b>30 kun ichida</b> bajaramiz. Obunangiz bekor bo'lishini unutmang.</p>
+    <p>Siz shuningdek o'zingiz haqingizdagi ma'lumotlarni ko'rsatishni yoki tuzatishni so'rashingiz mumkin.</p>
+  </div>
+
+  <h2>10. O'zgarishlar</h2>
+  <p>Siyosat o'zgarsa, shu sahifada yangilaymiz va yuqoridagi sanani o'zgartiramiz. Jiddiy o'zgarishlar haqida ilovada xabar beramiz.</p>
+
+  <h2>11. Aloqa</h2>
+  <p>Savollar uchun: <a href="mailto:doctorasqarbek@gmail.com">doctorasqarbek@gmail.com</a></p>
+</div>
+
+<!-- ======================= РУССКИЙ ======================= -->
+<div data-l="ru">
+  <h1>Политика конфиденциальности</h1>
+  <p class="upd">Последнее обновление: 4 октября 2026 г.</p>
+
+  <nav class="toc" data-l="ru">
+    <a href="#r-kto">Кто мы</a>
+    <a href="#r-device">Остаётся на телефоне</a>
+    <a href="#r-server">Хранится на сервере</a>
+    <a href="#r-bot">Telegram-бот</a>
+    <a href="#r-third">Третьи стороны</a>
+    <a href="#delete-ru">Удаление данных</a>
+  </nav>
+
+  <h2 id="r-kto">1. Кто мы</h2>
+  <p>«Orom» — приложение для самопомощи в области психотерапии (веб-приложение и приложение для Android) и связанный с ним Telegram-бот (@Doktor_Ergashev_bot). Оператор данных:</p>
+  <div class="box">
+    <b>Аскарбек Эргашев (Asqarbek Ergashev)</b><br>
+    Контакт: <a href="mailto:doctorasqarbek@gmail.com">doctorasqarbek@gmail.com</a>
+  </div>
+  <div class="note">Orom не является медицинской услугой или лечением. Приложение не заменяет личную консультацию врача или психолога. В тяжёлом состоянии или при мыслях о причинении себе вреда немедленно обратитесь к специалисту или в местную службу экстренной помощи.</div>
+
+  <h2 id="r-device">2. Данные, которые остаются только на вашем телефоне</h2>
+  <p>Следующее хранится <b>только на вашем устройстве</b> и <b>не отправляется</b> на наш сервер:</p>
+  <ul>
+    <li>записи дневника и настроения, дневник мыслей, ответы на упражнения и тесты;</li>
+    <li>все личные тексты, которые вы пишете в упражнениях;</li>
+    <li>настройки приложения (вид письма, тёмная тема).</li>
+  </ul>
+  <p><b>Исключение: «Ежедневный план».</b> Чтобы уведомления приходили вовремя, время и текст задач плана хранятся на сервере (см. раздел 3).</p>
+  <p>Android-приложение хранит записи в хранилище сайта браузера Chrome, поэтому удаление приложения эти записи не удаляет (при повторной установке они вернутся). Чтобы удалить их, воспользуйтесь кнопкой <i>Настройки → «Удалить мои данные»</i> или в Chrome выполните <i>Настройки → Настройки сайтов → Все сайты → doctorasqarbek-rgb.github.io → Удалить данные</i>. Очистка данных браузера удаляет записи безвозвратно.</p>
+
+  <h2 id="r-server">3. Данные, которые хранятся на сервере</h2>
+  <p>Для работы приложения на нашем сервере (Render) хранится следующее:</p>
+  <div class="tbl"><table data-l="ru">
+    <tr><th>Данные</th><th>Зачем</th></tr>
+    <tr><td>Случайный идентификатор устройства и короткий код (имя, телефон или email не требуются)</td><td>Привязка подписки к устройству, подтверждение оплаты</td></tr>
+    <tr><td>Telegram ID (только если вы сами выбрали «Войти через Telegram»; имя и телефон не собираются)</td><td>Привязка подписки к вашему аккаунту и восстановление на другом телефоне</td></tr>
+    <tr><td>Статус подписки: тариф, дата окончания</td><td>Открытие платных разделов</td></tr>
+    <tr><td>Записи об оплате: номер заказа, тариф, сумма, способ оплаты, статус, дата. Данные банковской карты у нас не хранятся</td><td>Учёт и подтверждение оплаты</td></tr>
+    <tr><td>Подписка на уведомления (push-адрес браузера) и время последней активности</td><td>Отправка напоминаний (только если вы включили)</td></tr>
+    <tr><td>Прогресс упражнений: выполненные сегодня упражнения на характер и общее число дней (без текстов)</td><td>Настройка напоминаний</td></tr>
+    <tr><td>«Ежедневный план»: текст задачи на каждый час, время и отметка о выполнении (только если вы пользуетесь этой функцией)</td><td>Отправка уведомления, когда наступит время задачи, и вечернее напоминание о невыполненном. Автоматически удаляется через 3 дня после даты</td></tr>
+    <tr><td>Телефон и комментарий, которые вы сами отправили через «Обращение»</td><td>Связаться с вами</td></tr>
+  </table></div>
+  <p>Мы <b>не продаём</b> ваши данные, не используем их для рекламы и не передаём рекламным или аналитическим сервисам.</p>
+
+  <h2 id="r-bot">4. Telegram-бот</h2>
+  <p>Оплата подписки и поддержка осуществляются через Telegram-бота. Бот получает через Telegram и хранит:</p>
+  <ul>
+    <li>Telegram ID, username и имя;</li>
+    <li>тариф и даты подписки, связь с коротким кодом в приложении;</li>
+    <li>ожидающие оплаты и заказы (тариф, сумма, статус);</li>
+    <li>по тестам в боте — только тип теста и дату прохождения (результаты не сохраняются).</li>
+  </ul>
+  <p>Фото чека не записывается в базу: оно передаётся через Telegram только администратору (Asqarbek Ergashev) и просматривается для подтверждения оплаты. Если вы пишете врачу как пациент, ваш вопрос и приложенное фото отправляются в закрытую группу поддержки, доступную только врачу, и не смешиваются с данными приложения.</p>
+  <p>Для проверки чеков искусственный интеллект не используется.</p>
+
+  <h2 id="r-third">5. Сторонние сервисы</h2>
+  <ul>
+    <li><b>Render</b> — хостинг сервера и базы данных.</li>
+    <li><b>GitHub Pages</b> — доставка страниц приложения.</li>
+    <li><b>Telegram</b> — бот, чеки об оплате и закрытые каналы/группы.</li>
+    <li><b>Push-сервисы браузеров</b> (Google, Apple, Mozilla) — доставка уведомлений. Текст уведомления проходит через эти сервисы.</li>
+    <li><b>Click и Payme</b> — платёжные системы; при их подключении оплата проходит через них. Данные карты обрабатывают они, мы их не видим.</li>
+    <li><b>YouTube</b> (youtube-nocookie) — при показе некоторых видеоуроков. <b>Google Fonts</b> — загрузка шрифтов. При этом сервис может видеть ваш IP-адрес.</li>
+  </ul>
+  <p>В приложении нет аналитических, рекламных или отслеживающих библиотек.</p>
+
+  <h2>6. Сроки хранения</h2>
+  <p>Данные на сервере хранятся, пока вы не попросите их удалить, <b>кроме задач «Ежедневного плана»: они автоматически удаляются через 3 дня после даты.</b> Записи об оплате хранятся в течение срока, требуемого законодательством для бухгалтерского учёта, и после удаления остаются в обезличенном виде, не связанном с вами.</p>
+
+  <h2>7. Безопасность</h2>
+  <p>Связь между приложением и сервером шифруется по HTTPS. Административные функции защищены секретным ключом. Ни одна система не безопасна на 100%, но мы стараемся собирать минимум данных.</p>
+
+  <h2>8. Дети</h2>
+  <p>Orom не предназначен для детей младше 18 лет, и мы сознательно не собираем их данные.</p>
+
+  <h2 id="delete-ru">9. Удаление данных</h2>
+  <div class="box">
+    <p><b>В приложении:</b> <i>Настройки → «Удалить мои данные»</i> («Ma'lumotlarimni o'chirish»). Это удалит:</p>
+    <ul>
+      <li>все записи и настройки на телефоне;</li>
+      <li>прогресс упражнений, ежедневный план, подписку на уведомления и обращения на сервере.</li>
+    </ul>
+    <p>Если у вас есть активная подписка, она <b>не отменяется</b>: для продолжения услуги сохраняются идентификатор устройства, привязка к Telegram-аккаунту (если вы входили), подписка и запись об оплате. Чтобы отключить только этот телефон от Telegram-аккаунта: <i>Настройки → «Telegram-аккаунт» → Выйти</i>.</p>
+  </div>
+  <div class="box">
+    <p><b>Полное удаление (включая подписку, записи об оплате и данные Telegram-бота):</b> напишите на <a href="mailto:doctorasqarbek@gmail.com?subject=Orom%3A%20%D1%83%D0%B4%D0%B0%D0%BB%D0%B5%D0%BD%D0%B8%D0%B5%20%D0%B4%D0%B0%D0%BD%D0%BD%D1%8B%D1%85">doctorasqarbek@gmail.com</a> или обратитесь к @Doktor_Ergashev_bot в Telegram. Укажите «Мой код» из приложения или ваш username в Telegram. Мы выполним запрос <b>в течение 30 дней</b>. Помните: подписка при этом будет отменена.</p>
+    <p>Вы также можете запросить информацию о ваших данных или их исправление.</p>
+  </div>
+
+  <h2>10. Изменения</h2>
+  <p>При изменении политики мы обновим эту страницу и дату вверху. О существенных изменениях сообщим в приложении.</p>
+
+  <h2>11. Контакты</h2>
+  <p>По вопросам: <a href="mailto:doctorasqarbek@gmail.com">doctorasqarbek@gmail.com</a></p>
+</div>
+
+<footer>© Orom · Asqarbek Ergashev</footer>
+</div>
+
+<script>
+(function(){
+  var uz=document.getElementById("bUz"), ru=document.getElementById("bRu");
+  function set(l){
+    document.documentElement.lang=l;
+    uz.setAttribute("aria-pressed", l==="uz");
+    ru.setAttribute("aria-pressed", l==="ru");
+    document.title = l==="ru" ? "Orom — Политика конфиденциальности" : "Orom — Maxfiylik siyosati";
+  }
+  uz.onclick=function(){ set("uz"); };
+  ru.onclick=function(){ set("ru"); };
+  // #ru yoki #delete-ru bilan ochilsa — rus tilida
+  if(/ru/i.test(location.hash)) set("ru");
+})();
+</script>
+</body>
+</html>

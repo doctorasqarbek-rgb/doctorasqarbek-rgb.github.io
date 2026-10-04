@@ -138,6 +138,19 @@ body{
 .about-hero .stat b{font-family:'Fraunces';font-weight:700;font-size:22px}
 .about-hero .stat span{font-size:11.5px;opacity:.85}
 .tool-card{position:relative}
+.plan-tabs{display:flex;gap:8px;margin:14px 0 10px}
+.plan-tabs button{flex:1;padding:11px 8px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--ink-soft);font:600 14px/1 inherit;font-family:inherit;cursor:pointer}
+.plan-tabs button.on{background:var(--primary);border-color:var(--primary);color:#fff}
+.plan-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.plan-time{width:50px;flex:none;font-weight:600;font-size:14px;color:var(--primary)}
+.plan-row input{flex:1;min-width:0;margin:0}
+.plan-check{flex:none;width:38px;height:38px;border-radius:50%;border:1.5px solid var(--line);background:var(--surface);color:var(--muted);font-size:17px;cursor:pointer;visibility:hidden}
+.plan-row.filled .plan-check{visibility:visible}
+.plan-row.done .plan-check{background:var(--sage);border-color:var(--sage);color:#fff}
+.plan-row.done input{text-decoration:line-through;opacity:.65}
+.plan-row.now .plan-time{color:#C98A2B}
+.plan-row.now input{border-color:#C98A2B}
+.plan-status{min-height:18px;font-size:12px;color:var(--muted);text-align:right;padding:2px 2px 6px}
 .tool-lock-overlay{position:absolute;inset:0;background:rgba(250,247,242,.94);border-radius:var(--r);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;cursor:pointer;z-index:5;text-align:center;padding:16px}
 /* Qulflangan (obunasiz) premium mashq: faqat sarlavha va qisqa izoh ko'rinadi, ichki matn, maydonlar va
    videolar butunlay yashiriladi — orqada xira ko'rinib ham, belgilab nusxalab ham bo'lmaydi. */
@@ -446,6 +459,7 @@ html.play-mode .rc-play-only{display:block}
     <div id="homeLadderReminder"></div>
     <div id="homeGoalsReminder"></div>
     <div id="homeCharexReminder"></div>
+    <div id="homePlanReminder"></div>
 
     <div class="hero">
       <div class="breath-wrap">
@@ -513,6 +527,12 @@ html.play-mode .rc-play-only{display:block}
     <span class="eyebrow">Amaliy mashqlar</span>
     <div class="h-display">Vositalar</div>
     <p class="lead">Kundalik foydalanish uchun amaliy texnikalar.</p>
+
+    <div class="planner-entry" id="planEntry" style="margin-top:18px;cursor:pointer">
+      <div class="pe-ic">🗓</div>
+      <div class="txt"><b>Kunlik reja <span class="pro-badge" id="planEntryTag" style="display:none;margin-left:6px">OBUNA</span></b><span>Har soatga ishingizni yozing: ilova vaqti kelganda eslatadi</span></div>
+      <div class="go">→</div>
+    </div>
 
     <div class="tool-card" style="margin-top:18px">
       <h3>🧠 Fikr filtri</h3>
@@ -847,7 +867,7 @@ html.play-mode .rc-play-only{display:block}
 
     <div class="disc" id="deleteCard">
       <h3>🗑 Ma'lumotlarimni o'chirish</h3>
-      <p>Telefoningizdagi barcha yozuvlar (kundalik, test va mashq javoblari, saqlangan progress) hamda serverdagi progress, bildirishnoma va murojaat ma'lumotlari o'chiriladi. <strong>Faol obunangiz saqlanadi</strong>, u bekor bo'lmaydi. Bu amalni qaytarib bo'lmaydi.</p>
+      <p>Telefoningizdagi barcha yozuvlar (kundalik, test va mashq javoblari, saqlangan progress) hamda serverdagi progress, kunlik reja, bildirishnoma va murojaat ma'lumotlari o'chiriladi. <strong>Faol obunangiz saqlanadi</strong>, u bekor bo'lmaydi. Bu amalni qaytarib bo'lmaydi.</p>
       <button class="btn btn-ghost btn-block" id="deleteDataBtn" style="margin-top:10px;color:#b3261e">Ma'lumotlarimni o'chirish</button>
       <div id="deleteConfirm" style="display:none;margin-top:10px">
         <p class="tiny" style="text-align:left;padding:0 0 8px"><strong>Aniq o'chirilsinmi?</strong> Yozuvlaringiz tiklanmaydi. Obunangiz (agar bo'lsa) saqlanadi.</p>
@@ -876,6 +896,7 @@ html.play-mode .rc-play-only{display:block}
   <section class="view" id="view-ladder"></section>
   <section class="view" id="view-ladderitem"></section>
   <section class="view" id="view-charex"></section>
+  <section class="view" id="view-plan"></section>
 
   <!-- TESTS LIST -->
   <section class="view" id="view-tests">
@@ -985,7 +1006,7 @@ try{ if(PLAY_MODE && sessionStorage.getItem("orom:showRedeem")==="1") document.d
 /* Tekshiruvlar haqida ma'lumot bergan darslar oxiridagi yozuv (matnni faqat shu yerdan o'zgartiring) */
 const CLINIC_NOTE = "Agar siz tekshiruvlardan o'tmagan bo'lsangiz, klinikaga qabulga kelganingizda ham tekshiruvlardan o'tib ketishingiz mumkin. <strong>Bizda tekshiruvlar mavjud.</strong>";
 let receptionReturn=null;   // "Qabul turlari" sahifasidan "orqaga" qayerga qaytishini eslab turadi (masalan, dars sahifasiga)
-const APP_VERSION = "2026.10.04-j";   // har yangi nusxada o'zgartiriladi: Sozlamalar pastida ko'rinadi (eski nusxa keshdan chiqayotganini bilish uchun)
+const APP_VERSION = "2026.10.04-k";   // har yangi nusxada o'zgartiriladi: Sozlamalar pastida ko'rinadi (eski nusxa keshdan chiqayotganini bilish uchun)
 /* Server bergan Telegram havolasi faqat https://t.me/ (yoki telegram.me) bo'lsa ishlatiladi — boshqa manzilga yo'naltirib yuborishga qarshi */
 function safeTgLink(link){
  const v=String(link||"");
@@ -1461,6 +1482,163 @@ async function renderTgCard(){
 document.addEventListener("visibilitychange",()=>{ if(!document.hidden) checkTgLogin(); });
 setTimeout(async()=>{ const done=await checkTgLogin(); if(!done) startTgPolling(); },1500);
 
+/* ================= KUNLIK REJA =================
+   Soatlar bo'yicha jadval: foydalanuvchi har soatga nima qilishini yozadi, server vaqti kelganda bildirishnoma yuboradi,
+   bajarilmaganlarni kechqurun (21:00) yana eslatadi. Pullik obuna doirasida. Vaqt Toshkent bo'yicha (UTC+5).
+   Eslatma serverdan kelgani uchun vazifalarning matni va vaqti serverda saqlanadi (sanadan 3 kun o'tgach avtomatik o'chadi). */
+let planDay=0, planTasks=new Map(), planBusy=false;
+const PLAN_HOURS=[6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,0,1,2,3,4,5];
+function planDateStr(off){ return new Date(Date.now()+5*3600*1000+off*86400000).toISOString().slice(0,10); }
+function planNowHour(){ return new Date(Date.now()+5*3600*1000).getUTCHours(); }
+function planLabel(off){
+ const m=["yanvar","fevral","mart","aprel","may","iyun","iyul","avgust","sentabr","oktabr","noyabr","dekabr"];
+ const d=new Date(Date.now()+5*3600*1000+off*86400000);
+ return d.getUTCDate()+" "+m[d.getUTCMonth()];
+}
+function hh(h){ return String(h).padStart(2,"0")+":00"; }
+async function planFetch(path,opts,query){
+ const deviceId=await getDeviceId();
+ const url=BACKEND_URL+"/api/plan"+path+(query?("?deviceId="+encodeURIComponent(deviceId)+"&"+query):"");
+ const o=opts?{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({deviceId,...opts})}:{cache:"no-store"};
+ const r=await fetch(url,o);
+ let j={}; try{ j=await r.json(); }catch(e){}
+ return {status:r.status,ok:r.ok,data:j};
+}
+function renderPlanEntry(){
+ const t=document.getElementById("planEntryTag"); if(t) t.style.display=isPro?"none":"inline-block";
+}
+async function openPlan(){
+ if(!isPro){ renderPremium(); show("premium"); return; }
+ planDay=0; renderPlanShell(); show("plan"); loadPlanDay();
+}
+function renderPlanShell(){
+ const el=document.getElementById("view-plan");
+ el.innerHTML=`
+  <span class="eyebrow">Amaliy mashqlar</span>
+  <div class="h-display">Kunlik reja</div>
+  <p class="lead">Har soatga nima qilishingizni yozing. Vaqti kelganda ilova bildirishnoma bilan eslatadi, bajarilmaganlarni kechqurun yana eslatadi.</p>
+  <div id="planPushHint"></div>
+  <div class="plan-tabs">
+    <button id="planTab0" class="on">Bugun · ${planLabel(0)}</button>
+    <button id="planTab1">Ertaga · ${planLabel(1)}</button>
+  </div>
+  <div class="planner-stats" id="planStats"></div>
+  <div class="plan-status" id="planStatus"></div>
+  <div id="planGrid"></div>
+  <div class="tiny" style="text-align:left;padding:6px 2px">Yozganingiz avtomatik saqlanadi. Bajarilgan ishni ✓ bilan belgilang. Reja sanadan 3 kun o'tgach avtomatik o'chiriladi.</div>
+  <button class="btn btn-ghost btn-block" id="planClear" style="margin-top:6px;color:#b3261e">Shu kun rejasini tozalash</button>`;
+ document.getElementById("planTab0").onclick=()=>planSwitch(0);
+ document.getElementById("planTab1").onclick=()=>planSwitch(1);
+ document.getElementById("planClear").onclick=planClearDay;
+ planPushHint();
+}
+async function planPushHint(){
+ const box=document.getElementById("planPushHint"); if(!box) return;
+ let ok=false;
+ try{
+  if("Notification" in window && Notification.permission==="granted" && navigator.serviceWorker){
+   const reg=await Promise.race([navigator.serviceWorker.ready,new Promise(r=>setTimeout(()=>r(null),2500))]);
+   ok=!!(reg&&await reg.pushManager.getSubscription());
+  }
+ }catch(e){}
+ if(ok){ box.innerHTML=""; return; }
+ box.innerHTML=`<div class="test-note" style="margin:10px 0">⚠️ Eslatma kelishi uchun bildirishnomani yoqing.
+  <button class="btn btn-soft btn-block" id="planPushBtn" style="margin-top:8px">🔔 Bildirishnomani yoqish</button></div>`;
+ document.getElementById("planPushBtn").onclick=async()=>{ const r=await enablePushNotifications(); if(r!==false) planPushHint(); };
+}
+function planSwitch(d){
+ planDay=d;
+ document.getElementById("planTab0").classList.toggle("on",d===0);
+ document.getElementById("planTab1").classList.toggle("on",d===1);
+ loadPlanDay();
+}
+function planSetStatus(t){ const e=document.getElementById("planStatus"); if(e){ e.textContent=t||""; if(t) setTimeout(()=>{ if(e.textContent===t) e.textContent=""; },1800); } }
+function planUpdateStats(){
+ const el=document.getElementById("planStats"); if(!el) return;
+ const all=[...planTasks.values()], done=all.filter(t=>t.done).length;
+ el.innerHTML=`<div class="ps"><b>${all.length}</b><span>ish rejalashtirildi</span></div><div class="ps"><b>${done}/${all.length}</b><span>bajarildi</span></div>`;
+}
+async function loadPlanDay(){
+ const grid=document.getElementById("planGrid"); if(!grid) return;
+ const day=planDay; grid.innerHTML='<p class="tiny" style="padding:14px 0">Yuklanmoqda…</p>';
+ let r; try{ r=await planFetch("",null,"date="+planDateStr(day)); }
+ catch(e){ grid.innerHTML='<p class="tiny" style="padding:14px 0">Internet aloqasi yo\'q.</p><button class="btn btn-soft btn-block" id="planRetry">Qayta urinish</button>'; document.getElementById("planRetry").onclick=loadPlanDay; return; }
+ if(day!==planDay) return;                                   // foydalanuvchi boshqa kunga o'tib ketdi
+ if(r.status===403){ renderPremium(); show("premium"); return; }
+ if(!r.ok){ grid.innerHTML='<p class="tiny" style="padding:14px 0">Reja yuklanmadi. Keyinroq urinib ko\'ring.</p>'; return; }
+ planTasks=new Map((r.data.tasks||[]).map(t=>[t.time,t]));
+ grid.innerHTML=""; planUpdateStats();
+ const nowH=planNowHour();
+ const night=document.createElement("div"); night.style.display="none";
+ for(const h of PLAN_HOURS){
+  const time=hh(h), t=planTasks.get(time);
+  const row=document.createElement("div");
+  row.className="plan-row"+(t?" filled":"")+(t&&t.done?" done":"")+(day===0&&h===nowH?" now":"");
+  row.dataset.time=time;
+  row.innerHTML=`<div class="plan-time">${time}</div><input type="text" maxlength="100" placeholder="Nima qilasiz?" autocomplete="off"><button class="plan-check" aria-label="Bajarildi">✓</button>`;
+  const inp=row.querySelector("input"); inp.value=t?t.text:"";
+  inp.addEventListener("change",()=>planSaveSlot(row,inp.value));
+  inp.addEventListener("keydown",e=>{ if(e.key==="Enter") inp.blur(); });
+  row.querySelector(".plan-check").onclick=()=>planToggleDone(row);
+  (h<6?night:grid).appendChild(row);
+ }
+ const tg=document.createElement("button"); tg.className="btn btn-ghost btn-block"; tg.textContent="🌙 Tungi soatlar (00:00–05:00)";
+ tg.onclick=()=>{ const open=night.style.display==="none"; night.style.display=open?"block":"none"; tg.textContent=open?"🌙 Tungi soatlarni yashirish":"🌙 Tungi soatlar (00:00–05:00)"; };
+ grid.appendChild(tg); grid.appendChild(night);
+ // tunda yozilgan vazifa bo'lsa — ko'rsatamiz
+ if([...planTasks.keys()].some(k=>+k.slice(0,2)<6)){ night.style.display="block"; tg.textContent="🌙 Tungi soatlarni yashirish"; }
+}
+async function planSaveSlot(row,value){
+ const time=row.dataset.time, text=(value||"").trim();
+ try{
+  const r=await planFetch("/set",{date:planDateStr(planDay),time,text});
+  if(r.status===403){ renderPremium(); show("premium"); return; }
+  if(!r.ok){ toast(r.data&&r.data.error?r.data.error:"Saqlab bo'lmadi"); return; }
+  if(r.data.task){ planTasks.set(time,r.data.task); row.classList.add("filled"); row.classList.remove("done"); }
+  else { planTasks.delete(time); row.classList.remove("filled","done"); }
+  planUpdateStats(); planSetStatus("✓ Saqlandi");
+ }catch(e){ toast("Internet aloqasi yo'q — saqlanmadi"); }
+}
+async function planToggleDone(row){
+ const t=planTasks.get(row.dataset.time); if(!t) return;
+ const done=!t.done;
+ try{
+  const r=await planFetch("/done",{id:t.id,done});
+  if(!r.ok) throw new Error("server");
+  t.done=done; row.classList.toggle("done",done); planUpdateStats(); homePlanCache=null;
+  if(done) toast("Ajoyib! Bir ish bajarildi 👏");
+ }catch(e){ toast("Belgilab bo'lmadi. Internetni tekshiring."); }
+}
+async function planClearDay(){
+ if(!planTasks.size){ toast("Bu kunda reja yo'q"); return; }
+ const btn=document.getElementById("planClear");
+ if(btn.dataset.ask!=="1"){ btn.dataset.ask="1"; btn.textContent="Aniq tozalansinmi? Yana bosing"; setTimeout(()=>{ if(btn){ btn.dataset.ask=""; btn.textContent="Shu kun rejasini tozalash"; } },4000); return; }
+ btn.dataset.ask=""; btn.textContent="Shu kun rejasini tozalash";
+ try{ const r=await planFetch("/clear",{date:planDateStr(planDay)}); if(!r.ok) throw new Error("server"); homePlanCache=null; toast("Reja tozalandi"); loadPlanDay(); }
+ catch(e){ toast("Tozalab bo'lmadi. Internetni tekshiring."); }
+}
+/* Bosh sahifa: kechqurun (18:00 dan) bugungi rejadan bajarilmagan ish qolgan bo'lsa — eslatma */
+let homePlanCache=null;
+async function renderHomePlanReminder(){
+ const el=document.getElementById("homePlanReminder"); if(!el) return;
+ if(!isPro||!backendReady()||planNowHour()<18){ el.innerHTML=""; return; }
+ try{
+  if(!homePlanCache||Date.now()-homePlanCache.at>60000){
+   const r=await planFetch("",null,"date="+planDateStr(0));
+   if(!r.ok){ el.innerHTML=""; return; }
+   homePlanCache={at:Date.now(),tasks:r.data.tasks||[]};
+  }
+  const pending=homePlanCache.tasks.filter(t=>!t.done);
+  if(!pending.length){ el.innerHTML=""; return; }
+  el.innerHTML=`<div class="home-reminder" id="homePlanGo">
+    <div class="hr-ic">📋</div>
+    <div class="txt"><b>Bugungi rejadan ${pending.length} ta ish qoldi</b><span>${pending[0].time} · ${pending[0].text.replace(/</g,"&lt;")}</span></div>
+    <div class="go">→</div></div>`;
+  document.getElementById("homePlanGo").onclick=openPlan;
+ }catch(e){ el.innerHTML=""; }
+}
+{const pe=document.getElementById("planEntry"); if(pe) pe.onclick=openPlan;}
+
 async function disablePushNotifications(){
  try{
   const reg=await navigator.serviceWorker.ready;
@@ -1759,7 +1937,7 @@ function courseStats(){
 }
 
 /* ---------- Navigatsiya ---------- */
-const views=["home","course","module","lesson","tools","help","settings","premium","tests","test","special","specialplay","paths","path","pathstep","planner","ladder","ladderitem","charex","reception","diploma"];
+const views=["home","course","module","lesson","tools","help","settings","premium","tests","test","special","specialplay","paths","path","pathstep","planner","ladder","ladderitem","charex","plan","reception","diploma"];
 let current="home", modStack=null;
 /* ===== TELEFONNING "ORQAGA" TUGMASI =====
    Ilova bitta sahifa bo'lgani uchun, tarix yozilmasa telefonning "orqaga" tugmasi ilovani darhol yopadi.
@@ -1835,8 +2013,8 @@ function show(v){
  activeEl.classList.add("active");
  applyScriptToContainer(activeEl);
  current=v;
- document.getElementById("backBtn").style.display=(v==="module"||v==="lesson"||v==="premium"||v==="test"||v==="special"||v==="specialplay"||v==="path"||v==="pathstep"||v==="planner"||v==="ladder"||v==="ladderitem"||v==="charex"||v==="settings"||v==="reception"||v==="diploma")?"block":"none";
- document.querySelectorAll("#nav button").forEach(b=>b.classList.toggle("active",b.dataset.go===v||(v==="test"&&b.dataset.go==="tests")||((v==="reception"||v==="diploma")&&b.dataset.go==="help")||((v==="path"||v==="pathstep"||v==="planner"||v==="ladder"||v==="ladderitem"||v==="charex")&&b.dataset.go==="paths")));
+ document.getElementById("backBtn").style.display=(v==="module"||v==="lesson"||v==="premium"||v==="test"||v==="special"||v==="specialplay"||v==="path"||v==="pathstep"||v==="planner"||v==="ladder"||v==="ladderitem"||v==="charex"||v==="plan"||v==="settings"||v==="reception"||v==="diploma")?"block":"none";
+ document.querySelectorAll("#nav button").forEach(b=>b.classList.toggle("active",b.dataset.go===v||(v==="plan"&&b.dataset.go==="tools")||(v==="test"&&b.dataset.go==="tests")||((v==="reception"||v==="diploma")&&b.dataset.go==="help")||((v==="path"||v==="pathstep"||v==="planner"||v==="ladder"||v==="ladderitem"||v==="charex")&&b.dataset.go==="paths")));
  window.scrollTo({top:0,behavior:"instant"});
  syncHistory(v);
 }
@@ -2124,6 +2302,7 @@ document.getElementById("backBtn").onclick=()=>{
  else if(current==="path"){renderPaths();show("paths");}
  else if(current==="pathstep"&&curPath){renderPath(curPath);show("path");}
  else if(current==="settings"){show("home");}
+ else if(current==="plan"){show("tools");}
  else if(current==="reception"&&receptionReturn){ const back=receptionReturn; receptionReturn=null; back(); }
  else if(current==="reception"||current==="diploma"){renderHelpDynamic();show("help");}
  else if(current==="lesson"&&modStack){renderModule(modStack);show("module");}
@@ -3651,6 +3830,7 @@ function handleDeepLink(urlStr){
   if(path){ renderCharexList(path); show("charex"); return true; }
   return false;
  }
+ if(go==="plan"){ openPlan(); return true; }
  if(go==="premium"){ renderPremium(); show("premium"); return true; }
  return false;
 }
@@ -3709,7 +3889,7 @@ function toast(t){const el=document.getElementById("toast");el.textContent=t;el.
 /* ---------- Ishga tushirish ---------- */
 document.getElementById("homeTestGo").onclick=()=>{renderTests();show("tests");};
 document.getElementById("homeSpecialGo").onclick=()=>{renderSpecial();show("special");};
-function renderAll(){renderHomePushPrompt();refreshProgress();renderHomeProBanner();renderHomeMods();renderCourse();renderHomeReminder();renderHomeLadderReminder();renderHomeGoalsReminder();renderHomeCharexReminder();}
+function renderAll(){renderHomePushPrompt();refreshProgress();renderHomeProBanner();renderHomeMods();renderCourse();renderHomeReminder();renderHomeLadderReminder();renderHomeGoalsReminder();renderHomeCharexReminder();renderHomePlanReminder();renderPlanEntry();}
 (async function(){
  reindex();
  registerDeviceIfNeeded();       // fon rejimida, kutmasdan — internet yo'q bo'lsa ham ilova to'xtamaydi
