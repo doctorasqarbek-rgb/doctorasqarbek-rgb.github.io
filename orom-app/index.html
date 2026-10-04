@@ -815,6 +815,19 @@ label.fld{font-size:13px;font-weight:600;color:var(--ink-soft);display:block;mar
       </div>
     </div>
 
+    <div class="disc" id="deleteCard">
+      <h3>🗑 Ma'lumotlarimni o'chirish</h3>
+      <p>Telefoningizdagi barcha yozuvlar (kundalik, test va mashq javoblari, saqlangan progress) hamda serverdagi progress, bildirishnoma va murojaat ma'lumotlari o'chiriladi. <strong>Obunangiz ham bekor bo'ladi.</strong> Bu amalni qaytarib bo'lmaydi.</p>
+      <button class="btn btn-ghost btn-block" id="deleteDataBtn" style="margin-top:10px;color:#b3261e">Ma'lumotlarimni o'chirish</button>
+      <div id="deleteConfirm" style="display:none;margin-top:10px">
+        <p class="tiny" style="text-align:left;padding:0 0 8px"><strong>Aniq o'chirilsinmi?</strong> Bu amalni qaytarib bo'lmaydi.</p>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-ghost btn-block" id="deleteNoBtn" style="flex:1">Bekor qilish</button>
+          <button class="btn btn-primary btn-block" id="deleteYesBtn" style="flex:1;background:#b3261e">Ha, o'chirish</button>
+        </div>
+      </div>
+    </div>
+
     <p class="tiny" id="appVersionLbl" style="text-align:center;padding:10px 0 0"></p>
   </section>
 
@@ -922,7 +935,7 @@ const BACKEND_URL = "https://orom-backend.onrender.com";
 /* Tekshiruvlar haqida ma'lumot bergan darslar oxiridagi yozuv (matnni faqat shu yerdan o'zgartiring) */
 const CLINIC_NOTE = "Agar siz tekshiruvlardan o'tmagan bo'lsangiz, klinikaga qabulga kelganingizda ham tekshiruvlardan o'tib ketishingiz mumkin. <strong>Bizda tekshiruvlar mavjud.</strong>";
 let receptionReturn=null;   // "Qabul turlari" sahifasidan "orqaga" qayerga qaytishini eslab turadi (masalan, dars sahifasiga)
-const APP_VERSION = "2026.10.04-a";   // har yangi nusxada o'zgartiriladi: Sozlamalar pastida ko'rinadi (eski nusxa keshdan chiqayotganini bilish uchun)
+const APP_VERSION = "2026.10.04-c";   // har yangi nusxada o'zgartiriladi: Sozlamalar pastida ko'rinadi (eski nusxa keshdan chiqayotganini bilish uchun)
 /* Server bergan Telegram havolasi faqat https://t.me/ (yoki telegram.me) bo'lsa ishlatiladi — boshqa manzilga yo'naltirib yuborishga qarshi */
 function safeTgLink(link){
  const v=String(link||"");
@@ -1257,6 +1270,36 @@ async function enablePushNotifications(){
   console.log("Push yoqishda xato:",e);
   toast("Xatolik: bildirishnoma yoqilmadi");
   return false;
+ }
+}
+
+/* Ma'lumotlarni o'chirish (Google Play talabi): avval server, muvaffaqiyatli bo'lsagina telefondagi ma'lumot tozalanadi
+   (server xato bersa, deviceId saqlanib qoladi va foydalanuvchi qayta urinib ko'ra oladi). */
+async function deleteAllMyData(){
+ const yes=document.getElementById("deleteYesBtn"), no=document.getElementById("deleteNoBtn");
+ yes.disabled=true; no.disabled=true;
+ try{
+  if(backendReady()){
+   const deviceId=await getDeviceId();
+   const r=await fetch(BACKEND_URL+"/api/delete-data",{
+    method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({deviceId,confirm:true})
+   });
+   if(!r.ok) throw new Error("server "+r.status);
+  }
+  try{
+   const reg=await Promise.race([navigator.serviceWorker.ready,new Promise(res=>setTimeout(()=>res(null),3000))]);
+   const sub=reg&&await reg.pushManager.getSubscription();
+   if(sub) await sub.unsubscribe();
+  }catch(e){ /* push yo'q — davom etamiz */ }
+  try{ Object.keys(localStorage).filter(k=>k.startsWith("orom:")).forEach(k=>localStorage.removeItem(k)); }catch(e){}
+  Store.mem={};
+  toast("Ma'lumotlaringiz o'chirildi");
+  setTimeout(()=>location.reload(),1200);
+ }catch(e){
+  console.log("O'chirishda xato:",e);
+  yes.disabled=false; no.disabled=false;
+  toast("O'chirib bo'lmadi. Internetni tekshirib, qayta urinib ko'ring.");
  }
 }
 
@@ -1800,7 +1843,7 @@ function fillPushGate(denied){
  document.getElementById("pgIcon").textContent=denied?"⚙️":"🔔";
  document.getElementById("pgTitle").textContent=denied?"Bildirishnoma o'chirilgan":"Iltimos, bildirishnomani yoqing";
  document.getElementById("pgText").textContent=denied
-  ? PUSH_REASON+" Buning uchun telefon sozlamalarida yoqing: Sozlamalar → Ilovalar → Orom → Bildirishnomalar → Ruxsat berish. Keyin ilovaga qaytib, Sozlamalar bo'limida «Bildirishnomalarni yoqish» tugmasini bosing."
+  ? PUSH_REASON+" Buning uchun Chrome'da yoqing: Chrome → ⋮ → Sozlamalar → Sayt sozlamalari → Bildirishnomalar → doctorasqarbek-rgb.github.io → Ruxsat berish. Keyin ilovaga qaytib, Sozlamalar bo'limida «Bildirishnomalarni yoqish» tugmasini bosing."
   : PUSH_REASON+" Iltimos, bildirishnomani yoqing.";
  const en=document.getElementById("pgEnable"), later=document.getElementById("pgLater");
  en.textContent=denied?"Tushundim":"🔔 Bildirishnomani yoqish";
@@ -1852,6 +1895,13 @@ async function renderHelpDynamic(){
 }
 function renderSettings(){
  renderPushSlot();
+ {const b=document.getElementById("deleteDataBtn"),c=document.getElementById("deleteConfirm");
+  if(b&&c){
+   c.style.display="none"; b.style.display="";
+   b.onclick=()=>{ b.style.display="none"; c.style.display=""; };
+   document.getElementById("deleteNoBtn").onclick=()=>{ c.style.display="none"; b.style.display=""; };
+   document.getElementById("deleteYesBtn").onclick=deleteAllMyData;
+  }}
  {const tip=document.getElementById("pushChromeTip"); if(tip) tip.style.display=/Android/i.test(navigator.userAgent||"")?"":"none";}   // faqat Android uchun
  {const v=document.getElementById("appVersionLbl"); if(v) v.textContent="Ilova versiyasi: "+APP_VERSION;}
  const lotinBtn=document.getElementById("scriptLotinBtn");
