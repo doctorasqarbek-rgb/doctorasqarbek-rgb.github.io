@@ -374,6 +374,9 @@ label.fld{font-size:13px;font-weight:600;color:var(--ink-soft);display:block;mar
 .push-prompt .pp-actions{display:flex;gap:8px}
 .push-prompt .pp-actions .btn{flex:1}
 /* Shifokor qabuli */
+.rc-play-only{display:none}
+html.play-mode .rc-normal{display:none}
+html.play-mode .rc-play-only{display:block}
 .rc-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px;box-shadow:var(--shadow-sm);margin-bottom:14px}
 .rc-card h3{font-family:'Fraunces';font-size:19px;line-height:1.3;margin:0 0 4px;color:var(--ink)}
 .rc-card .rc-sub{font-size:13px;color:var(--muted);margin:0 0 10px}
@@ -748,6 +751,16 @@ label.fld{font-size:13px;font-weight:600;color:var(--ink-soft);display:block;mar
   <section class="view" id="view-reception">
     <span class="eyebrow">Shifokor qabuli</span>
     <div class="h-display">Qabul turlari</div>
+    <div class="rc-play-only">
+      <p class="lead">Doktor Ergashev qabuli haqida batafsil ma'lumot va qabulga yozilish Telegram botda.</p>
+      <div class="disc">
+        <h3>Qabulga yozilish</h3>
+        <p>Bot orqali qabulga yozilish va savol berish mumkin. Qabul turlari va tartibi haqidagi ma'lumot botning «Xizmatlar» bo'limida.</p>
+        <a href="https://t.me/Doktor_Ergashev_bot" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-block" style="margin:8px 0;display:flex;align-items:center;justify-content:center;gap:8px;text-decoration:none"><span>Telegram bot orqali yozilish</span></a>
+        <p class="tiny" style="text-align:left;padding:4px 2px 0">Bot orqali qabulga yozilish va savol berish mumkin.</p>
+      </div>
+    </div>
+    <div class="rc-normal">
     <p class="lead">Doktor Ergashev qabulining turlari va narxlari. O'zingizga mosini tanlang.</p>
 
     <div class="rc-card">
@@ -782,6 +795,7 @@ label.fld{font-size:13px;font-weight:600;color:var(--ink-soft);display:block;mar
       <a href="https://t.me/Doktor_Ergashev_bot" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-block" style="margin:8px 0;display:flex;align-items:center;justify-content:center;gap:8px;text-decoration:none"><span>Telegram bot orqali yozilish</span></a>
     </div>
     <p class="tiny">Narxlar va qabul tartibi o'zgarishi mumkin: aniq ma'lumotni bot orqali oling.</p>
+    </div>
   </section>
 
   <!-- SOZLAMALAR -->
@@ -958,10 +972,11 @@ const PLAY_MODE=(function(){
   return sessionStorage.getItem("orom:play")==="1";
  }catch(e){ return false; }
 })();
+if(PLAY_MODE) document.documentElement.classList.add("play-mode");   // Play nusxasida qabul narxlari/tavsifi yashiriladi (ular botda)
 /* Tekshiruvlar haqida ma'lumot bergan darslar oxiridagi yozuv (matnni faqat shu yerdan o'zgartiring) */
 const CLINIC_NOTE = "Agar siz tekshiruvlardan o'tmagan bo'lsangiz, klinikaga qabulga kelganingizda ham tekshiruvlardan o'tib ketishingiz mumkin. <strong>Bizda tekshiruvlar mavjud.</strong>";
 let receptionReturn=null;   // "Qabul turlari" sahifasidan "orqaga" qayerga qaytishini eslab turadi (masalan, dars sahifasiga)
-const APP_VERSION = "2026.10.04-d";   // har yangi nusxada o'zgartiriladi: Sozlamalar pastida ko'rinadi (eski nusxa keshdan chiqayotganini bilish uchun)
+const APP_VERSION = "2026.10.04-f";   // har yangi nusxada o'zgartiriladi: Sozlamalar pastida ko'rinadi (eski nusxa keshdan chiqayotganini bilish uchun)
 /* Server bergan Telegram havolasi faqat https://t.me/ (yoki telegram.me) bo'lsa ishlatiladi — boshqa manzilga yo'naltirib yuborishga qarshi */
 function safeTgLink(link){
  const v=String(link||"");
@@ -2139,8 +2154,8 @@ function renderPremium(){
 
   ${PLAY_MODE?`
   <div class="disc" style="margin-top:4px">
-    <h3>Obunani qanday olish mumkin</h3>
-    <p>Obuna rasmiy Telegram botimiz orqali rasmiylashtiriladi: <b>@${BOT_USERNAME}</b>. Obuna faollashgach, shu sahifada «Obunani tekshirish» tugmasini bosing yoki ilovaga qaytib kiring: yopiq bo'limlar o'zi ochiladi.</p>
+    <h3>Obuna egalari uchun</h3>
+    <p>Yopiq bo'limlar obuna egalari uchun ochiladi. Obunangiz bo'lsa, «Obunani tekshirish» tugmasini bosing yoki ilovaga qaytib kiring: yopiq bo'limlar o'zi ochiladi.</p>
   </div>
   <button class="btn btn-primary btn-block" style="margin-top:14px" id="checkSub">Obunani tekshirish</button>
   <p class="tiny" style="text-align:left;padding:6px 2px 0">Kodingiz bo'lsa: Sozlamalar → «Kod kiritish».</p>`:`
