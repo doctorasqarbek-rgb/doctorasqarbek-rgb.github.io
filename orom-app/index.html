@@ -811,6 +811,12 @@ html.play-mode .rc-play-only{display:block}
       <p class="tiny" id="pushChromeTip" style="display:none;text-align:left;padding:10px 0 0">💡 Maslahat: bildirishnoma ilova nomi o'rniga «Chrome» nomi bilan kelsa, Play Market'da Chrome'ni yangilang va ilovani butunlay yopib, qayta oching.</p>
     </div>
 
+    <div class="disc" id="tgCard">
+      <h3>✈️ Telegram akkaunt</h3>
+      <p id="tgText"></p>
+      <div id="tgSlot" style="margin-top:10px"></div>
+    </div>
+
     <div class="disc">
       <h3>🔤 Yozuv turi</h3>
       <p>Ilova matnlarini qaysi alifboda ko'rishni tanlang.</p>
@@ -829,7 +835,7 @@ html.play-mode .rc-play-only{display:block}
       </div>
     </div>
 
-    <div class="disc" id="redeemCard">
+    <div class="disc rc-play-only" id="redeemCard">
       <h3>🎟 Kod kiritish</h3>
       <p>Sizda obuna kodi bo'lsa, shu yerga kiriting.</p>
       <input type="text" id="redeemInput" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="64" placeholder="Kod" style="margin-top:6px">
@@ -976,7 +982,7 @@ if(PLAY_MODE) document.documentElement.classList.add("play-mode");   // Play nus
 /* Tekshiruvlar haqida ma'lumot bergan darslar oxiridagi yozuv (matnni faqat shu yerdan o'zgartiring) */
 const CLINIC_NOTE = "Agar siz tekshiruvlardan o'tmagan bo'lsangiz, klinikaga qabulga kelganingizda ham tekshiruvlardan o'tib ketishingiz mumkin. <strong>Bizda tekshiruvlar mavjud.</strong>";
 let receptionReturn=null;   // "Qabul turlari" sahifasidan "orqaga" qayerga qaytishini eslab turadi (masalan, dars sahifasiga)
-const APP_VERSION = "2026.10.04-f";   // har yangi nusxada o'zgartiriladi: Sozlamalar pastida ko'rinadi (eski nusxa keshdan chiqayotganini bilish uchun)
+const APP_VERSION = "2026.10.04-h";   // har yangi nusxada o'zgartiriladi: Sozlamalar pastida ko'rinadi (eski nusxa keshdan chiqayotganini bilish uchun)
 /* Server bergan Telegram havolasi faqat https://t.me/ (yoki telegram.me) bo'lsa ishlatiladi — boshqa manzilga yo'naltirib yuborishga qarshi */
 function safeTgLink(link){
  const v=String(link||"");
@@ -1140,6 +1146,7 @@ async function refreshProFromServer(){
   userTier=data.tier||"basic";
   await Store.set("pro",isPro?"1":"0");
   await Store.set("tier",userTier);
+  await Store.set("tgLinked",data.linked?"1":"0");
   if(isPro) ensurePremiumContent(); else clearPremiumContent();   // pullik darslar matni: obunachiga yuklanadi, obuna tugasa o'chiriladi
  }catch(e){ /* tarmoq yo'q — keshlangan qiymat bilan davom etamiz */ }
 }
@@ -1349,6 +1356,107 @@ async function deleteAllMyData(){
   toast("O'chirib bo'lmadi. Internetni tekshirib, qayta urinib ko'ring.");
  }
 }
+
+/* ================= TELEGRAM ORQALI KIRISH =================
+   Obuna qurilmaga emas, Telegram akkauntga bog'lanadi: istalgan telefonda «Telegram orqali kirish» bosilsa, obuna o'zi ochiladi.
+   Oqim: ilova serverdan bir martalik kod oladi → botni ochadi → foydalanuvchi botda tasdiqlaydi → ilova holatni tekshirib, obunani yangilaydi.
+   Telefon raqami so'ralmaydi; serverda faqat Telegram ID saqlanadi. Kirish ixtiyoriy: ilova kirishsiz ham ishlaydi. */
+const TG_PENDING_KEY="tgPending";
+let tgPollTimer=null, tgLogoutAsk=false, tgBusy=false;
+function storeDel(k){ try{localStorage.removeItem("orom:"+k);}catch(e){} delete Store.mem[k]; }
+async function tgGetPending(){
+ try{ const p=JSON.parse((await Store.get(TG_PENDING_KEY))||"null"); return p&&p.nonce?p:null; }catch(e){ return null; }
+}
+function stopTgPolling(){ if(tgPollTimer){ clearTimeout(tgPollTimer); tgPollTimer=null; } }
+function startTgPolling(){
+ stopTgPolling(); let n=0;
+ const tick=async()=>{ const done=await checkTgLogin(); if(done) return; n++; tgPollTimer=setTimeout(tick,n<24?5000:15000); };
+ tgPollTimer=setTimeout(tick,4000);
+}
+async function refreshAfterTgChange(){
+ await refreshProFromServer();
+ try{ renderPremium(); renderHomeMods(); renderCourse(); refreshAll(); }catch(e){}
+ renderTgCard();
+}
+/* true — kutish tugadi (ulandi/muddati o'tdi/kutilmayapti); false — hali kutilyapti */
+async function checkTgLogin(){
+ const p=await tgGetPending();
+ if(!p||!backendReady()) return true;
+ if(Date.now()>p.exp+30000){ storeDel(TG_PENDING_KEY); renderTgCard(); return true; }
+ try{
+  const deviceId=await getDeviceId();
+  const r=await fetch(BACKEND_URL+"/api/tg/login-status?deviceId="+encodeURIComponent(deviceId)+"&nonce="+encodeURIComponent(p.nonce),{cache:"no-store"});
+  if(!r.ok) return false;
+  const j=await r.json();
+  if(j.status==="linked"){
+   storeDel(TG_PENDING_KEY); stopTgPolling();
+   toast("Telegram akkaunt ulandi ✅");
+   await refreshAfterTgChange();
+   return true;
+  }
+  if(j.status==="expired"||j.status==="unknown"){
+   storeDel(TG_PENDING_KEY); renderTgCard(); toast("Kirish muddati tugadi. Qayta urinib ko'ring.");
+   return true;
+  }
+ }catch(e){ /* tarmoq yo'q — keyin yana urinamiz */ }
+ return false;
+}
+async function startTgLogin(){
+ if(tgBusy) return;
+ if(!backendReady()){ toast("Internet yoki server ulanmagan"); return; }
+ tgBusy=true;
+ try{
+  const deviceId=await getDeviceId();
+  const r=await fetch(BACKEND_URL+"/api/tg/login-start",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({deviceId,play:PLAY_MODE})});
+  if(r.status===429){ toast("Juda ko'p urinish. Keyinroq urinib ko'ring."); return; }
+  if(!r.ok) throw new Error("server");
+  const j=await r.json();
+  await Store.set(TG_PENDING_KEY,JSON.stringify({nonce:j.nonce,exp:Date.now()+(j.expiresInSec||600)*1000}));
+  renderTgCard(); startTgPolling();
+  location.href="https://t.me/"+BOT_USERNAME+"?start=login_"+j.nonce;
+ }catch(e){ toast("Ulab bo'lmadi. Internetni tekshirib, qayta urinib ko'ring."); }
+ finally{ tgBusy=false; }
+}
+async function tgLogout(){
+ try{
+  const deviceId=await getDeviceId();
+  const r=await fetch(BACKEND_URL+"/api/tg/logout",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({deviceId})});
+  if(!r.ok) throw new Error("server");
+  tgLogoutAsk=false;
+  toast("Telegram akkauntdan chiqdingiz");
+  await refreshAfterTgChange();
+ }catch(e){ toast("Chiqib bo'lmadi. Internetni tekshirib, qayta urinib ko'ring."); }
+}
+async function renderTgCard(){
+ const text=document.getElementById("tgText"), slot=document.getElementById("tgSlot");
+ if(!text||!slot) return;
+ const pending=await tgGetPending();
+ const linked=(await Store.get("tgLinked"))==="1";
+ slot.innerHTML="";
+ const btn=(label,cls,fn)=>{ const b=document.createElement("button"); b.className="btn "+cls+" btn-block"; b.textContent=label; b.onclick=fn; b.style.marginTop="8px"; slot.appendChild(b); return b; };
+ if(pending){
+  text.textContent="Telegramda botga o'tib, «Ha, ulash» tugmasini bosing. Keyin shu ilovaga qayting: holat o'zi yangilanadi.";
+  btn("Tekshirish","btn-primary",async()=>{ const done=await checkTgLogin(); if(!done) toast("Hali tasdiqlanmadi"); });
+  btn("Bekor qilish","btn-ghost",()=>{ storeDel(TG_PENDING_KEY); stopTgPolling(); renderTgCard(); });
+ }else if(linked){
+  text.textContent="✅ Telegram akkaunt ulangan. Obunangiz akkauntingizga bog'langan: boshqa telefonda «Telegram orqali kirish» ni bossangiz, o'zi ochiladi.";
+  if(tgLogoutAsk){
+   const p=document.createElement("p"); p.className="tiny"; p.style.cssText="text-align:left;padding:4px 0";
+   p.textContent="Chiqsangiz, shu telefonda yopiq bo'limlar yopiladi. Qayta kirsangiz o'zi ochiladi."; slot.appendChild(p);
+   btn("Ha, chiqaman","btn-primary",tgLogout);
+   btn("Bekor qilish","btn-ghost",()=>{ tgLogoutAsk=false; renderTgCard(); });
+  }else{
+   btn("Chiqish","btn-ghost",()=>{ tgLogoutAsk=true; renderTgCard(); });
+  }
+ }else{
+  text.textContent=PLAY_MODE
+   ? "Obunangiz bormi? Telegram orqali kiring: yopiq bo'limlar ochiladi."
+   : "Telegram orqali kirsangiz, obunangiz akkauntingizga bog'lanadi va telefon almashtirsangiz ham o'zi qaytadi.";
+  btn("✈️ Telegram orqali kirish","btn-primary",startTgLogin);
+ }
+}
+document.addEventListener("visibilitychange",()=>{ if(!document.hidden) checkTgLogin(); });
+setTimeout(async()=>{ const done=await checkTgLogin(); if(!done) startTgPolling(); },1500);
 
 async function disablePushNotifications(){
  try{
@@ -1944,6 +2052,7 @@ async function renderHelpDynamic(){
 }
 function renderSettings(){
  renderPushSlot();
+ renderTgCard();
  {const b=document.getElementById("deleteDataBtn"),c=document.getElementById("deleteConfirm");
   if(b&&c){
    c.style.display="none"; b.style.display="";
@@ -2155,7 +2264,7 @@ function renderPremium(){
   ${PLAY_MODE?`
   <div class="disc" style="margin-top:4px">
     <h3>Obuna egalari uchun</h3>
-    <p>Yopiq bo'limlar obuna egalari uchun ochiladi. Obunangiz bo'lsa, «Obunani tekshirish» tugmasini bosing yoki ilovaga qaytib kiring: yopiq bo'limlar o'zi ochiladi.</p>
+    <p>Yopiq bo'limlar obuna egalari uchun ochiladi. Obunangiz bo'lsa, «Obunani tekshirish» tugmasini bosing yoki ilovaga qaytib kiring: yopiq bo'limlar o'zi ochiladi. Boshqa telefonda bo'lsangiz, Sozlamalarda «Telegram orqali kirish» ni bosing.</p>
   </div>
   <button class="btn btn-primary btn-block" style="margin-top:14px" id="checkSub">Obunani tekshirish</button>
   <p class="tiny" style="text-align:left;padding:6px 2px 0">Kodingiz bo'lsa: Sozlamalar → «Kod kiritish».</p>`:`
