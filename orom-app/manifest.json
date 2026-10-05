@@ -1,8 +1,9 @@
 {
   "id": "/orom-app/",
-  "name": "Orom — Psixoterapiya",
+  "name": "Orom: ruhiy salomatlik",
   "short_name": "Orom",
   "description": "Ruhiy salomatlikni mustaqil yaxshilash uchun ilova",
+  "lang": "uz",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
@@ -23,7 +24,7 @@
       "purpose": "any"
     },
     {
-      "src": "./icon-512.png",
+      "src": "./icon-maskable-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
