@@ -825,6 +825,12 @@ html.play-mode .rc-play-only{display:block}
     <span class="eyebrow">Sozlamalar</span>
     <div class="h-display">Sozlamalar</div>
 
+    <div class="planner-entry" id="profileEntry" style="margin-top:18px;cursor:pointer">
+      <div class="pe-ic">👤</div>
+      <div class="txt"><b>Mening profilim</b><span>Tarif, muddat, Telegram akkaunt, to'lovlar tarixi</span></div>
+      <div class="go">→</div>
+    </div>
+
     <div class="disc" style="margin-top:18px" id="pushCard">
       <h3>🔔 Bildirishnomalar</h3>
       <p>Kunlik eslatma, kursni davom ettirish va obuna haqida telefoningizga bildirishnoma oling.</p>
@@ -897,6 +903,7 @@ html.play-mode .rc-play-only{display:block}
   <section class="view" id="view-ladderitem"></section>
   <section class="view" id="view-charex"></section>
   <section class="view" id="view-plan"></section>
+  <section class="view" id="view-profile"></section>
 
   <!-- TESTS LIST -->
   <section class="view" id="view-tests">
@@ -1002,11 +1009,20 @@ const PLAY_MODE=(function(){
  }catch(e){ return false; }
 })();
 if(PLAY_MODE) document.documentElement.classList.add("play-mode");
-try{ if(PLAY_MODE && sessionStorage.getItem("orom:showRedeem")==="1") document.documentElement.classList.add("show-redeem"); }catch(e){}   // Play nusxasida qabul narxlari/tavsifi yashiriladi (ular botda)
+try{ if(PLAY_MODE && sessionStorage.getItem("orom:showRedeem")==="1") document.documentElement.classList.add("show-redeem"); }catch(e){}
+/* Botdan kelgan shaxsiy havola: /?tgl=<kod>. Kodni olib, manzildan darhol olib tashlaymiz (skrinshot va tarixda qolmasin). */
+let TGL_TOKEN=null;
+try{
+ const u=new URL(location.href), t=u.searchParams.get("tgl");
+ if(t!==null){
+  if(/^[A-Za-z0-9_-]{16,64}$/.test(t)) TGL_TOKEN=t;
+  u.searchParams.delete("tgl"); history.replaceState(null,"",u.pathname+u.search+u.hash);
+ }
+}catch(e){}   // Play nusxasida qabul narxlari/tavsifi yashiriladi (ular botda)
 /* Tekshiruvlar haqida ma'lumot bergan darslar oxiridagi yozuv (matnni faqat shu yerdan o'zgartiring) */
 const CLINIC_NOTE = "Agar siz tekshiruvlardan o'tmagan bo'lsangiz, klinikaga qabulga kelganingizda ham tekshiruvlardan o'tib ketishingiz mumkin. <strong>Bizda tekshiruvlar mavjud.</strong>";
 let receptionReturn=null;   // "Qabul turlari" sahifasidan "orqaga" qayerga qaytishini eslab turadi (masalan, dars sahifasiga)
-const APP_VERSION = "2026.10.04-k";   // har yangi nusxada o'zgartiriladi: Sozlamalar pastida ko'rinadi (eski nusxa keshdan chiqayotganini bilish uchun)
+const APP_VERSION = "2026.10.04-l";   // har yangi nusxada o'zgartiriladi: Sozlamalar pastida ko'rinadi (eski nusxa keshdan chiqayotganini bilish uchun)
 /* Server bergan Telegram havolasi faqat https://t.me/ (yoki telegram.me) bo'lsa ishlatiladi — boshqa manzilga yo'naltirib yuborishga qarshi */
 function safeTgLink(link){
  const v=String(link||"");
@@ -1639,6 +1655,91 @@ async function renderHomePlanReminder(){
 }
 {const pe=document.getElementById("planEntry"); if(pe) pe.onclick=openPlan;}
 
+/* ================= BOTDAN "ILOVANI OCHISH" HAVOLASI + PROFIL ================= */
+/* Havola bilan ochilganda: "Telegram akkauntga ulaymi?" — foydalanuvchi tasdiqlagandagina qurilma ulanadi */
+function showTgOpenConfirm(token){
+ if(document.getElementById("tgOpenOverlay")) return;
+ const ov=document.createElement("div"); ov.id="tgOpenOverlay";
+ ov.style.cssText="position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;padding:20px";
+ ov.innerHTML=`<div style="background:var(--surface);color:var(--ink);border-radius:22px;padding:24px 20px;max-width:380px;width:100%;box-shadow:0 20px 50px rgba(0,0,0,.35)">
+  <div style="font-size:34px;text-align:center">✈️</div>
+  <h3 style="margin:8px 0 6px;text-align:center">Telegram akkauntga ulaymi?</h3>
+  <p style="margin:0 0 8px;text-align:center">Bu qurilma Telegram akkauntingizga ulanadi. Obunangiz bo'lsa, shu yerda ham ochiladi.</p>
+  <p class="tiny" style="text-align:center;padding:0 0 12px">Bu havolani botdan o'zingiz olgan bo'lishingiz kerak. Boshqa odam yuborgan bo'lsa, «Yo'q» ni bosing.</p>
+  <div id="tgOpenMsg" class="tiny" style="text-align:center;min-height:16px;padding:0 0 8px"></div>
+  <div style="display:flex;gap:8px"><button class="btn btn-ghost btn-block" id="tgOpenNo" style="flex:1">Yo'q</button><button class="btn btn-primary btn-block" id="tgOpenYes" style="flex:1">Ha, ulash</button></div></div>`;
+ document.body.appendChild(ov);
+ const close=()=>{ ov.remove(); };
+ document.getElementById("tgOpenNo").onclick=close;
+ document.getElementById("tgOpenYes").onclick=async()=>{
+  const yes=document.getElementById("tgOpenYes"), no=document.getElementById("tgOpenNo"), msg=document.getElementById("tgOpenMsg");
+  yes.disabled=true; no.disabled=true; msg.textContent="Ulanmoqda…";
+  try{
+   const deviceId=await getDeviceId();
+   const r=await fetch(BACKEND_URL+"/api/tg/open-confirm",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({deviceId,token})});
+   const j=await r.json().catch(()=>({}));
+   if(!r.ok){
+    msg.textContent=r.status===429?"Juda ko'p urinish. Keyinroq urinib ko'ring.":"Havola eskirgan yoki ishlatilgan. Botda «📱 Ilovani ochish» ni qayta bosing.";
+    no.disabled=false; no.textContent="Yopish"; return;
+   }
+   close(); toast("Telegram akkaunt ulandi ✅"); await refreshAfterTgChange();
+  }catch(e){ msg.textContent="Internet aloqasi yo'q. Qayta urinib ko'ring."; yes.disabled=false; no.disabled=false; }
+ };
+}
+setTimeout(()=>{ if(TGL_TOKEN){ const t=TGL_TOKEN; TGL_TOKEN=null; showTgOpenConfirm(t); } },1200);
+
+const PLAN_NAMES={monthly_basic:"Standard · 1 oy",quarterly_basic:"Standard · 3 oy",monthly_premium:"Premium · 1 oy",quarterly_premium:"Premium · 3 oy",monthly:"Standard · 1 oy",lifetime:"Premium"};
+function pfDate(ms){ const d=new Date(ms+5*3600*1000); return String(d.getUTCDate()).padStart(2,"0")+"."+String(d.getUTCMonth()+1).padStart(2,"0")+"."+d.getUTCFullYear(); }
+function pfEsc(t){ return String(t).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c])); }
+function openProfile(){
+ document.getElementById("view-profile").innerHTML=`<span class="eyebrow">Hisobingiz</span><div class="h-display">Profil</div><div id="pfBody"><p class="tiny" style="padding:14px 0">Yuklanmoqda…</p></div>`;
+ show("profile"); loadProfile();
+}
+async function loadProfile(){
+ const body=document.getElementById("pfBody"); if(!body) return;
+ if(!backendReady()){ body.innerHTML='<p class="tiny">Server hali ulanmagan.</p>'; return; }
+ let p;
+ try{
+  const deviceId=await getDeviceId();
+  const r=await fetch(BACKEND_URL+"/api/profile?deviceId="+encodeURIComponent(deviceId),{cache:"no-store"});
+  if(!r.ok) throw new Error("server"); p=await r.json();
+ }catch(e){ body.innerHTML='<p class="tiny" style="padding:14px 0">Internet aloqasi yo\'q.</p><button class="btn btn-soft btn-block" id="pfRetry">Qayta urinish</button>'; document.getElementById("pfRetry").onclick=loadProfile; return; }
+ const now=Date.now(); let tarif;
+ if(p.active){
+  const days=Math.max(0,Math.ceil((p.expiresAt-now)/86400000));
+  tarif=`<div class="disc"><h3>📦 Tarif</h3><p style="font:600 22px/1.2 inherit;font-family:var(--serif,inherit);margin:4px 0">${p.tier==="premium"?"Premium":"Standard"}</p>
+   <p>Tugash sanasi: <b>${pfDate(p.expiresAt)}</b> · ${days} kun qoladi</p></div>`;
+ }else{
+  tarif=`<div class="disc"><h3>📦 Tarif</h3><p>Faol obuna yo'q.${p.expiresAt?" Oxirgi obuna "+pfDate(p.expiresAt)+" da tugagan.":""}</p>
+   ${PLAY_MODE?"":'<button class="btn btn-soft btn-block" id="pfPremium" style="margin-top:8px">Obuna bo\'limiga o\'tish</button>'}</div>`;
+ }
+ const tgc=p.linked
+  ? `<div class="disc"><h3>✈️ Telegram akkaunt</h3><p>✅ Ulangan. Obunangiz akkauntga bog'langan: boshqa telefonda ham Telegram orqali kirsangiz ochiladi.</p></div>`
+  : `<div class="disc"><h3>✈️ Telegram akkaunt</h3><p>Ulanmagan. Telegram orqali kirsangiz, obunangiz akkauntga bog'lanadi va telefon almashtirsangiz ham qaytadi.</p><button class="btn btn-primary btn-block" id="pfTg" style="margin-top:8px">✈️ Telegram orqali kirish</button></div>`;
+ let grp="";
+ if(p.active&&p.tier==="premium") grp=`<div class="disc"><h3>🔒 Yopiq guruh</h3><p>Jonli darslar yopiq guruhda o'tkaziladi.</p><button class="btn btn-sage btn-block" id="pfGroup" style="margin-top:8px">Guruhga qo'shilish</button><div class="tiny" id="pfGroupMsg" style="padding-top:6px"></div></div>`;
+ else grp=`<div class="disc"><h3>🔒 Yopiq guruh</h3><p>Premium obuna egalari uchun.</p></div>`;
+ const hist=(p.payments||[]).length
+  ? (p.payments||[]).map(x=>`<div style="display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid var(--line)"><span>${pfDate(x.paidAt)} · ${pfEsc(PLAN_NAMES[x.plan]||x.plan)}</span>${PLAY_MODE?"":'<b>'+Number(x.amount).toLocaleString("ru-RU").replace(/\u00a0/g," ")+" so'm</b>"}</div>`).join("")
+  : '<p class="tiny" style="text-align:left;padding:4px 0">Hozircha to\'lovlar yo\'q.</p>';
+ body.innerHTML=tarif+tgc+grp+`<div class="disc"><h3>🧾 To'lovlar tarixi</h3>${hist}</div>
+  <button class="btn btn-ghost btn-block" id="pfSettings" style="margin-top:6px">⚙️ Sozlamalar (til, ma'lumotlarni o'chirish)</button>`;
+ const g=id=>document.getElementById(id);
+ if(g("pfPremium")) g("pfPremium").onclick=()=>{ renderPremium(); show("premium"); };
+ if(g("pfTg")) g("pfTg").onclick=startTgLogin;
+ g("pfSettings").onclick=()=>{ renderSettings(); show("settings"); };
+ if(g("pfGroup")) g("pfGroup").onclick=async()=>{
+  const m=g("pfGroupMsg"); m.textContent="Tekshirilmoqda…";
+  try{
+   const deviceId=await getDeviceId();
+   const r=await fetch(BACKEND_URL+"/api/group-invite?deviceId="+encodeURIComponent(deviceId)); const j=await r.json().catch(()=>({}));
+   if(r.ok&&j.link){ m.textContent=""; window.open(safeTgLink(j.link),"_blank","noopener"); }
+   else m.textContent=j.error||"Hozir havola olib bo'lmadi.";
+  }catch(e){ m.textContent="Internet aloqasi yo'q."; }
+ };
+}
+{const pe=document.getElementById("profileEntry"); if(pe) pe.onclick=openProfile;}
+
 async function disablePushNotifications(){
  try{
   const reg=await navigator.serviceWorker.ready;
@@ -1937,7 +2038,7 @@ function courseStats(){
 }
 
 /* ---------- Navigatsiya ---------- */
-const views=["home","course","module","lesson","tools","help","settings","premium","tests","test","special","specialplay","paths","path","pathstep","planner","ladder","ladderitem","charex","plan","reception","diploma"];
+const views=["home","course","module","lesson","tools","help","settings","premium","tests","test","special","specialplay","paths","path","pathstep","planner","ladder","ladderitem","charex","plan","profile","reception","diploma"];
 let current="home", modStack=null;
 /* ===== TELEFONNING "ORQAGA" TUGMASI =====
    Ilova bitta sahifa bo'lgani uchun, tarix yozilmasa telefonning "orqaga" tugmasi ilovani darhol yopadi.
@@ -2013,7 +2114,7 @@ function show(v){
  activeEl.classList.add("active");
  applyScriptToContainer(activeEl);
  current=v;
- document.getElementById("backBtn").style.display=(v==="module"||v==="lesson"||v==="premium"||v==="test"||v==="special"||v==="specialplay"||v==="path"||v==="pathstep"||v==="planner"||v==="ladder"||v==="ladderitem"||v==="charex"||v==="plan"||v==="settings"||v==="reception"||v==="diploma")?"block":"none";
+ document.getElementById("backBtn").style.display=(v==="module"||v==="lesson"||v==="premium"||v==="test"||v==="special"||v==="specialplay"||v==="path"||v==="pathstep"||v==="planner"||v==="ladder"||v==="ladderitem"||v==="charex"||v==="plan"||v==="profile"||v==="settings"||v==="reception"||v==="diploma")?"block":"none";
  document.querySelectorAll("#nav button").forEach(b=>b.classList.toggle("active",b.dataset.go===v||(v==="plan"&&b.dataset.go==="tools")||(v==="test"&&b.dataset.go==="tests")||((v==="reception"||v==="diploma")&&b.dataset.go==="help")||((v==="path"||v==="pathstep"||v==="planner"||v==="ladder"||v==="ladderitem"||v==="charex")&&b.dataset.go==="paths")));
  window.scrollTo({top:0,behavior:"instant"});
  syncHistory(v);
@@ -2303,6 +2404,7 @@ document.getElementById("backBtn").onclick=()=>{
  else if(current==="pathstep"&&curPath){renderPath(curPath);show("path");}
  else if(current==="settings"){show("home");}
  else if(current==="plan"){show("tools");}
+ else if(current==="profile"){show("settings");}
  else if(current==="reception"&&receptionReturn){ const back=receptionReturn; receptionReturn=null; back(); }
  else if(current==="reception"||current==="diploma"){renderHelpDynamic();show("help");}
  else if(current==="lesson"&&modStack){renderModule(modStack);show("module");}
