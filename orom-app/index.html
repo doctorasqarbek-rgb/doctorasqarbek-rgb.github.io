@@ -1679,7 +1679,7 @@ function showTgOpenConfirm(token){
    const r=await fetch(BACKEND_URL+"/api/tg/open-confirm",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({deviceId,token})});
    const j=await r.json().catch(()=>({}));
    if(!r.ok){
-    msg.textContent=r.status===429?"Juda ko'p urinish. Keyinroq urinib ko'ring.":"Havola eskirgan yoki ishlatilgan. Botda «📱 Ilovani ochish» ni qayta bosing.";
+    msg.textContent=r.status===429?"Juda ko'p urinish. Keyinroq urinib ko'ring.":"Havola eskirgan yoki ishlatilgan. Botda «📱 Orom ilovasini ochish» ni qayta bosing.";
     no.disabled=false; no.textContent="Yopish"; return;
    }
    close(); toast("Telegram akkaunt ulandi ✅"); await refreshAfterTgChange();
@@ -2250,7 +2250,7 @@ async function renderHomePushPrompt(){
  if(state==="denied"){
   el.innerHTML=`<div class="push-prompt">
    <div class="pp-title">🔔 Bildirishnoma o'chirilgan</div>
-   <p>${PUSH_REASON} Telefon sozlamalarida yoqing: Sozlamalar → Ilovalar → Orom → Bildirishnomalar. Yoqilmasa: Chrome → ⋮ → Sozlamalar → Sayt sozlamalari → Bildirishnomalar → doctorasqarbek-rgb.github.io → Ruxsat berish.</p>
+   <p>${PUSH_REASON} Telefon sozlamalarida yoqing: Sozlamalar → Ilovalar → Orom → Bildirishnomalar. Yoqilmasa: Chrome → ⋮ → Sozlamalar → Sayt sozlamalari → Bildirishnomalar → app.oromlife.uz → Ruxsat berish.</p>
   </div>`;
   return;
  }
@@ -2282,7 +2282,7 @@ function fillPushGate(denied){
  document.getElementById("pgIcon").textContent=denied?"⚙️":"🔔";
  document.getElementById("pgTitle").textContent=denied?"Bildirishnoma o'chirilgan":"Iltimos, bildirishnomani yoqing";
  document.getElementById("pgText").textContent=denied
-  ? PUSH_REASON+" Buning uchun telefon sozlamalarida yoqing: Sozlamalar → Ilovalar → Orom → Bildirishnomalar → Ruxsat berish. Yoqilmasa: Chrome → ⋮ → Sozlamalar → Sayt sozlamalari → Bildirishnomalar → doctorasqarbek-rgb.github.io → Ruxsat berish. Keyin ilovaga qaytib, Sozlamalar bo'limida «Bildirishnomalarni yoqish» tugmasini bosing."
+  ? PUSH_REASON+" Buning uchun telefon sozlamalarida yoqing: Sozlamalar → Ilovalar → Orom → Bildirishnomalar → Ruxsat berish. Yoqilmasa: Chrome → ⋮ → Sozlamalar → Sayt sozlamalari → Bildirishnomalar → app.oromlife.uz → Ruxsat berish. Keyin ilovaga qaytib, Sozlamalar bo'limida «Bildirishnomalarni yoqish» tugmasini bosing."
   : PUSH_REASON+" Iltimos, bildirishnomani yoqing.";
  const en=document.getElementById("pgEnable"), later=document.getElementById("pgLater");
  en.textContent=denied?"Tushundim":"🔔 Bildirishnomani yoqish";
