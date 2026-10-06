@@ -825,7 +825,14 @@ html.play-mode .rc-play-only{display:block}
     <span class="eyebrow">Sozlamalar</span>
     <div class="h-display">Sozlamalar</div>
 
-    <div class="planner-entry" id="profileEntry" style="margin-top:18px;cursor:pointer">
+    <div class="planner-entry" id="subEntry" style="margin-top:18px;cursor:pointer">
+      <div class="pe-ic">⭐</div>
+      <div class="txt"><b>Obuna</b><span id="subEntrySub">Tarif va obuna holati</span></div>
+      <div class="go">→</div>
+    </div>
+    <div id="settingsUpgrade"></div>
+
+    <div class="planner-entry" id="profileEntry" style="margin-top:12px;cursor:pointer">
       <div class="pe-ic">👤</div>
       <div class="txt"><b>Mening profilim</b><span>Tarif, muddat, Telegram akkaunt, to'lovlar tarixi</span></div>
       <div class="go">→</div>
@@ -1022,7 +1029,7 @@ try{
 /* Tekshiruvlar haqida ma'lumot bergan darslar oxiridagi yozuv (matnni faqat shu yerdan o'zgartiring) */
 const CLINIC_NOTE = "Agar siz tekshiruvlardan o'tmagan bo'lsangiz, klinikaga qabulga kelganingizda ham tekshiruvlardan o'tib ketishingiz mumkin. <strong>Bizda tekshiruvlar mavjud.</strong>";
 let receptionReturn=null;   // "Qabul turlari" sahifasidan "orqaga" qayerga qaytishini eslab turadi (masalan, dars sahifasiga)
-const APP_VERSION = "2026.10.06-p";   // har yangi nusxada o'zgartiriladi: Sozlamalar pastida ko'rinadi (eski nusxa keshdan chiqayotganini bilish uchun)
+const APP_VERSION = "2026.10.06-q";   // har yangi nusxada o'zgartiriladi: Sozlamalar pastida ko'rinadi (eski nusxa keshdan chiqayotganini bilish uchun)
 /* Server bergan Telegram havolasi faqat https://t.me/ (yoki telegram.me) bo'lsa ishlatiladi — boshqa manzilga yo'naltirib yuborishga qarshi */
 function safeTgLink(link){
  const v=String(link||"");
@@ -1866,9 +1873,9 @@ async function payViaBot(){
 let pickedUpgrade=null, upgradeQuote=null;
 const fmtSom=n=>Number(n).toLocaleString("ru-RU").replace(/\u00a0|\u202f/g," ")+" so'm";
 const fmtUzDate=ms=>new Date(ms).toLocaleDateString("ru-RU",{timeZone:"Asia/Tashkent"});
-async function loadUpgradeCard(){
+async function loadUpgradeCard(host){
  if(PLAY_MODE) return;       // Play versiyasida narx va to'lovga yo'naltirish YO'Q
- const el=document.getElementById("upgradeCard");
+ const el=host||document.getElementById("upgradeCard");
  if(!el||!backendReady()) return;
  try{
   const deviceId=await getDeviceId();
@@ -1890,10 +1897,10 @@ async function loadUpgradeCard(){
      <div class="pv">${fmtSom(o.price)}</div>
    </div>`).join("")}
    <p class="tiny" style="text-align:left;padding:0 0 8px">Premium muddati to'lov tasdiqlangan kundan boshlab yangidan hisoblanadi. Premium'da qo'shimcha: yopiq guruh (jonli darslar).</p>
-   <button class="btn btn-primary btn-block" id="upgradeBotBtn">Premiumga o'tish: botda to'lash</button>
+   <button class="btn btn-primary btn-block upgradeBotBtn">Premiumga o'tish: botda to'lash</button>
   </div>`;
- el.querySelectorAll("[data-up]").forEach(c=>c.onclick=()=>{pickedUpgrade=c.dataset.up;loadUpgradeCard();});
- document.getElementById("upgradeBotBtn").onclick=upgradeViaBot;
+ el.querySelectorAll("[data-up]").forEach(c=>c.onclick=()=>{pickedUpgrade=c.dataset.up;loadUpgradeCard(el);});
+ el.querySelector(".upgradeBotBtn").onclick=upgradeViaBot;
 }
 async function upgradeViaBot(){
  if(!backendReady()){ toast("Backend hali ulanmagan"); return; }
@@ -2363,6 +2370,13 @@ async function renderHelpDynamic(){
  refreshScriptDisplay(); // shu funksiya har qanday tartibda chaqirilsa ham, oxirida yozuvni to'g'irlaydi
 }
 function renderSettings(){
+ {const se=document.getElementById("subEntry"), ss=document.getElementById("subEntrySub"), su=document.getElementById("settingsUpgrade");
+  if(se&&ss){
+   ss.textContent=isPro?((userTier==="premium"?"Premium":"Standard")+" obuna faol"+((!PLAY_MODE&&userTier!=="premium")?" · Premiumga o'tish mumkin":"")):(PLAY_MODE?"Obunani tekshirish, Telegram orqali kirish":"Tarifni tanlash va to'lash");
+   se.onclick=()=>{ renderPremium(); show("premium"); };
+  }
+  if(su){ su.innerHTML=""; if(isPro && userTier!=="premium" && !PLAY_MODE) loadUpgradeCard(su); }   // Standard obunachi: Premiumga o'tish (narx farqi bilan) shu yerning o'zida
+ }
  renderPushSlot();
  renderTgCard();
  {const b=document.getElementById("deleteDataBtn"),c=document.getElementById("deleteConfirm");
