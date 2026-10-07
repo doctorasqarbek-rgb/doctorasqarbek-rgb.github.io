@@ -853,11 +853,12 @@ html.play-mode .rc-play-only{display:block}
     </div>
 
     <div class="disc">
-      <h3>🔤 Yozuv turi</h3>
-      <p>Ilova matnlarini qaysi alifboda ko'rishni tanlang.</p>
+      <h3>🔤 Til va yozuv</h3>
+      <p>Ilova tilini va o'zbekcha matn alifbosini tanlang.</p>
       <div style="display:flex;gap:8px;margin-top:10px">
         <button class="btn btn-block" id="scriptLotinBtn" style="flex:1">Lotin</button>
         <button class="btn btn-block" id="scriptKirillBtn" style="flex:1">Кирилл</button>
+        <button class="btn btn-block" id="scriptRuBtn" style="flex:1" data-noru="1">Русский</button>
       </div>
     </div>
 
@@ -1029,7 +1030,7 @@ try{
 /* Tekshiruvlar haqida ma'lumot bergan darslar oxiridagi yozuv (matnni faqat shu yerdan o'zgartiring) */
 const CLINIC_NOTE = "Agar siz tekshiruvlardan o'tmagan bo'lsangiz, klinikaga qabulga kelganingizda ham tekshiruvlardan o'tib ketishingiz mumkin. <strong>Bizda tekshiruvlar mavjud.</strong>";
 let receptionReturn=null;   // "Qabul turlari" sahifasidan "orqaga" qayerga qaytishini eslab turadi (masalan, dars sahifasiga)
-const APP_VERSION = "2026.10.06-q";   // har yangi nusxada o'zgartiriladi: Sozlamalar pastida ko'rinadi (eski nusxa keshdan chiqayotganini bilish uchun)
+const APP_VERSION = "2026.10.07-s";   // har yangi nusxada o'zgartiriladi: Sozlamalar pastida ko'rinadi (eski nusxa keshdan chiqayotganini bilish uchun)
 /* Server bergan Telegram havolasi faqat https://t.me/ (yoki telegram.me) bo'lsa ishlatiladi — boshqa manzilga yo'naltirib yuborishga qarshi */
 function safeTgLink(link){
  const v=String(link||"");
@@ -1107,6 +1108,7 @@ function _latin2cyrillicCore(text){
 const _origTextMap=new WeakMap(); // har bir matn tuguni uchun ASL (lotin) matnni saqlaymiz
 function applyScriptToContainer(container){
  if(!container) return;
+ if(scriptMode==="ru"){ ruApply(container); return; }
  const walker=document.createTreeWalker(container, NodeFilter.SHOW_TEXT, null);
  const nodes=[]; let n;
  while((n=walker.nextNode())) nodes.push(n);
@@ -1123,9 +1125,131 @@ function applyScriptToContainer(container){
 }
 
 async function setScriptMode(mode){
+ const wasRu=scriptMode==="ru";
  scriptMode = mode;
  try{ await Store.set("scriptMode", mode); }catch(e){}
+ if(wasRu||mode==="ru"){ try{ location.reload(); }catch(e){} }   // rus tiliga o'tganda/qaytganda sahifa yangidan yuklanadi
 }
+/* ===================== RUS TILI (Русский) =====================
+   Matnlar ilovada o'zbekcha yoziladi; rus rejimida ekrandagi har bir matn bloki lug'atdan (ru.json — bepul qism;
+   /api/premium-ru — faqat obunachiga pullik qism) topilib almashtiriladi. Kalit: matnning qisqa xeshi (ruHash).
+   Lug'atda topilmagan matn o'zbekcha qoladi (ilova hech qachon buzilmaydi). Til almashganda sahifa qayta yuklanadi. */
+let RU_DICT={};
+const RU_INLINE=new Set(["B","STRONG","I","EM","SPAN","A","BR","U","SMALL","SUP","SUB","MARK","CODE","S"]);
+const RU_SKIP=new Set(["SCRIPT","STYLE","SVG","TEXTAREA","NOSCRIPT","INPUT","SELECT","OPTION","IMG","CANVAS","VIDEO","AUDIO"]);
+function ruHash(s){
+ let h1=0x811c9dc5, h2=0x1b873593;
+ for(let i=0;i<s.length;i++){ const c=s.charCodeAt(i);
+  h1^=c; h1=Math.imul(h1,0x01000193)>>>0;
+  h2^=c; h2=Math.imul(h2,0x85ebca6b)>>>0; h2^=h2>>>13; h2>>>=0; }
+ return h1.toString(16).padStart(8,"0")+h2.toString(16).padStart(8,"0").slice(0,5);
+}
+function ruUnescape(t){ return t.replace(/&(amp|lt|gt|quot|nbsp|#39|#x27);/g,(m,e)=>({amp:"&",lt:"<",gt:">",quot:'"',nbsp:" ","#39":"'","#x27":"'"})[e]); }
+/* "normal shakl": teglar atributsiz, entitilar ochilgan, bo'sh joylar bittaga */
+function ruNorm(s){
+ return ruUnescape(String(s).replace(/<(\/?)([a-zA-Z][a-zA-Z0-9]*)\b[^>]*?>/g,"<$1$2>")).replace(/\s+/g," ").trim();
+}
+function ruLookup(norm){
+ if(!norm||!/[A-Za-zА-Яа-яЎўҚқҒғҲҳ]/.test(norm)) return null;
+ let v=RU_DICT[ruHash(norm)];
+ if(v!==undefined) return v;
+ const digits=norm.match(/\d+/g);
+ if(digits){
+  v=RU_DICT[ruHash(norm.replace(/\d+/g,"#"))];
+  if(v!==undefined){ let i=0; return v.replace(/#/g,()=>digits[i++]!==undefined?digits[i-1]:"#"); }
+ }
+ return null;
+}
+function ruEsc(t){ return t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+function ruToHtml(ru){ return ru.split(/(<\/?[a-zA-Z][a-zA-Z0-9]*>)/).map((p,i)=>i%2?p:ruEsc(p)).join(""); }
+function ruInlineOnly(el){
+ for(const c of el.children){ if(!RU_INLINE.has(c.tagName)||c.id||c.hasAttribute("onclick")||!ruInlineOnly(c)) return false; }
+ return true;
+}
+const _ruOut=new WeakMap();
+function ruApplyUnit(el){
+ const hasEl=el.children.length>0;
+ const norm=ruNorm(hasEl?el.innerHTML:el.textContent);
+ if(!norm) return false;
+ if(_ruOut.get(el)===norm) return true;
+ const ru=ruLookup(norm);
+ if(ru===null) return false;
+ if(!hasEl && !/</.test(ru)){
+  if(el.childNodes.length===1&&el.firstChild.nodeType===3) el.firstChild.nodeValue=ru; else el.textContent=ru;
+  _ruOut.set(el,ruNorm(ru));
+ } else {
+  // ichki teglar (<b>, <br> ...) saqlanadi: har bir ochuvchi teg asl nusxadagi atributlari bilan tiklanadi
+  const opens=(el.innerHTML.match(/<([a-zA-Z][a-zA-Z0-9]*)\b[^>]*>/g)||[]);
+  let k=0;
+  const html=ruToHtml(ru).replace(/<([a-zA-Z][a-zA-Z0-9]*)>/g,(m,tag)=>{
+   while(k<opens.length && !new RegExp("^<"+tag+"[\\s>/]","i").test(opens[k])) k++;
+   return k<opens.length?opens[k++]:m;
+  });
+  el.innerHTML=html;
+  _ruOut.set(el,ruNorm(el.innerHTML));
+ }
+ return true;
+}
+function ruApplyText(node){
+ const norm=ruNorm(node.nodeValue);
+ if(!norm||_ruOut.get(node)===norm) return;
+ const ru=ruLookup(norm);
+ if(ru===null||/</.test(ru)) return;
+ const lead=/^\s/.test(node.nodeValue)?" ":"", trail=/\s$/.test(node.nodeValue)?" ":"";
+ node.nodeValue=lead+ru+trail;
+ _ruOut.set(node,ruNorm(ru));
+}
+function ruWalk(el){
+ if(el.nodeType===3){ ruApplyText(el); return; }
+ if(el.nodeType!==1||RU_SKIP.has(el.tagName)) return;
+ if(el.hasAttribute&&(el.hasAttribute("data-noru"))) return;
+ if(ruInlineOnly(el)){ if(ruApplyUnit(el)) return; }   // butun blok topilmasa — bo'laklar alohida tarjima qilinadi
+ for(const c of Array.from(el.childNodes)) ruWalk(c);
+}
+function ruApplyAttrs(root){
+ const list=(root.querySelectorAll?root.querySelectorAll("[placeholder],[title],[aria-label],[alt]"):[]);
+ const fix=e=>["placeholder","title","aria-label","alt"].forEach(a=>{
+  if(!e.hasAttribute||!e.hasAttribute(a)) return;
+  const ru=ruLookup(ruNorm(e.getAttribute(a))); if(ru!==null&&!/</.test(ru)) e.setAttribute(a,ru);
+ });
+ if(root.nodeType===1) fix(root);
+ list.forEach(fix);
+}
+function ruApply(container){
+ if(!container||!Object.keys(RU_DICT).length) return;
+ ruWalk(container);
+ ruApplyAttrs(container);
+}
+function ruMerge(d){ if(d&&typeof d==="object") Object.assign(RU_DICT,d); }
+async function ruLoadCached(){
+ try{ const c=await Store.get("ruDict"); if(c){ const o=JSON.parse(c); ruMerge(o.d); } }catch(e){}
+ try{ if(isPro){ const c=await Store.get("ruPremium"); if(c){ const o=JSON.parse(c); ruMerge(o.d); } } }catch(e){}
+}
+function ruRefreshView(){
+ ruApply(document.body);   // ko'rinishlar + oynalar (chiqish dialogi va h.k.)
+}
+async function ruFetchFree(){
+ if(scriptMode!=="ru") return;
+ try{
+  const r=await fetch("ru.json?v="+encodeURIComponent(APP_VERSION),{cache:"no-cache"});
+  if(!r.ok) return;
+  const o=await r.json(); if(!o||!o.d) return;
+  ruMerge(o.d); try{ await Store.set("ruDict",JSON.stringify(o)); }catch(e){}
+  ruRefreshView();
+ }catch(e){}
+}
+async function ruFetchPremium(){
+ if(scriptMode!=="ru"||!isPro||!backendReady()) return;
+ try{
+  const deviceId=await getDeviceId();
+  const r=await fetch(BACKEND_URL+"/api/premium-ru?deviceId="+encodeURIComponent(deviceId),{cache:"no-store"});
+  if(!r.ok) return;
+  const o=await r.json(); if(!o||!o.d) return;
+  ruMerge(o.d); try{ await Store.set("ruPremium",JSON.stringify(o)); }catch(e){}
+  ruRefreshView();
+ }catch(e){}
+}
+
 function refreshScriptDisplay(){
  const active=document.querySelector(".view.active");
  if(active) applyScriptToContainer(active);
@@ -1143,7 +1267,7 @@ function setupScriptObserver(){
  if(_scriptObserver) return;
  const root=document.getElementById("app")||document.body;
  _scriptObserver=new MutationObserver((mutations)=>{
-  if(scriptMode!=="kirill") return; // lotin holatida yangi tugunlar allaqachon manba(lotin)dan keladi
+  if(scriptMode!=="kirill"&&scriptMode!=="ru") return; // lotin holatida yangi tugunlar allaqachon manba(lotin)dan keladi
   mutations.forEach(mut=>{
    mut.addedNodes.forEach(node=>{
     if(node.nodeType===3){ // yolg'iz matn tuguni — parentNode orqali izchil mantiqdan foydalanamiz
@@ -1284,6 +1408,7 @@ function ensurePremiumContent(){
    if(!data||typeof data.lessons!=="object") return !!premiumContent;
    premiumContent=data; mergePremiumContent(data);
    try{ await Store.set("premiumContent",JSON.stringify(data)); }catch(e){}
+   if(scriptMode==="ru") ruFetchPremium();
    return true;
   }catch(e){ return !!premiumContent; }   // internet yo'q — saqlangan nusxa bilan
   finally{ setTimeout(()=>{ premiumLoading=null; },0); }
@@ -2048,7 +2173,8 @@ async function loadState(){
  isPro=(await Store.get("pro"))==="1";   // darhol keshlangan qiymatni ko'rsatamiz (tez, offline ham ishlaydi)
  userTier=(await Store.get("tier"))||"basic";
  await loadCachedPremiumContent(); await loadCachedFreeContent(); ensureFreeContent();         // saqlangan pullik matn (obunachi bo'lsa) — internetsiz ham ochiladi
- try{ const sm=await Store.get("scriptMode"); if(sm==="kirill") scriptMode="kirill"; }catch(e){}
+ try{ const sm=await Store.get("scriptMode"); if(sm==="kirill"||sm==="ru") scriptMode=sm; }catch(e){}
+ if(scriptMode==="ru"){ document.documentElement.lang="ru"; await ruLoadCached(); ruRefreshView(); ruFetchFree(); ruFetchPremium(); }
  try{ const dt=await Store.get("darkTheme"); if(dt==="1"){ darkTheme=true; document.body.classList.add("dark-theme"); } }catch(e){}
  await refreshProFromServer();            // so'ngra haqiqiy holatni serverdan tekshiramiz
 }
@@ -2397,6 +2523,7 @@ function renderSettings(){
     });
    }
   }}
+ const ruBtn=document.getElementById("scriptRuBtn");
  const lotinBtn=document.getElementById("scriptLotinBtn");
  const kirillBtn=document.getElementById("scriptKirillBtn");
  const lightBtn=document.getElementById("themeLightBtn");
@@ -2405,6 +2532,7 @@ function renderSettings(){
  const paint=()=>{
   lotinBtn.className="btn btn-block "+(scriptMode==="lotin"?"btn-primary":"btn-ghost");
   kirillBtn.className="btn btn-block "+(scriptMode==="kirill"?"btn-primary":"btn-ghost");
+  ruBtn.className="btn btn-block "+(scriptMode==="ru"?"btn-primary":"btn-ghost");
   lightBtn.className="btn btn-block "+(!darkTheme?"btn-primary":"btn-ghost");
   darkBtn.className="btn btn-block "+(darkTheme?"btn-primary":"btn-ghost");
  };
@@ -2412,6 +2540,7 @@ function renderSettings(){
 
  lotinBtn.onclick=async()=>{ await setScriptMode("lotin"); paint(); refreshScriptDisplay(); };
  kirillBtn.onclick=async()=>{ await setScriptMode("kirill"); paint(); refreshScriptDisplay(); };
+ ruBtn.onclick=async()=>{ await setScriptMode("ru"); };
  lightBtn.onclick=async()=>{ await setDarkTheme(false); paint(); };
  darkBtn.onclick=async()=>{ await setDarkTheme(true); paint(); };
 }
@@ -3373,7 +3502,37 @@ async function renderLadderWork(p,items){
 }
 
 /* --- Har bir band uchun nazariy + amaliy ko'rsatma --- */
+function ladderGuidanceRu(it){
+ const t=it.text, sc=it.score;
+ if(sc<=3) return {
+  theory:`Это один из <strong>самых лёгких</strong> пунктов вашей лестницы (${sc}/10). Реакция на низком уровне обычно спадает быстро, иногда за несколько минут. Работа с такими пунктами — отличное начало, чтобы укрепить уверенность в себе и подготовиться к более трудным пунктам.`,
+  practice:[
+   "Коротко подготовьтесь к ситуации: сделайте 3–4 глубоких вдоха.",
+   `Войдите прямо в ситуацию «${t}» — попробуйте это сегодня или на этой неделе.`,
+   "Оставайтесь в ситуации, даже если появится дискомфорт, не убегайте. Обычно на этом уровне он быстро спадает.",
+   "Затем запишите несколькими словами, как вы себя почувствовали.",
+   "Если всё прошло легко — поздравляем, переходите к следующему пункту!"]};
+ if(sc<=6) return {
+  theory:`Это пункт <strong>среднего</strong> уровня (${sc}/10). На таких пунктах реакция заметно усиливается, но если вы остаётесь в ситуации, она <strong>спадает сама</strong> — это главный принцип экспозиционной терапии. Остаться вместо того, чтобы убежать, учит мозг: «я справляюсь».`,
+  practice:[
+   "Перед началом выполните минутное дыхательное упражнение или заземление 5-4-3-2-1.",
+   `Войдите в ситуацию «${t}». Если сразу трудно, разделите её на более мелкую часть (например, начните с меньшего времени или более лёгкого варианта).`,
+   "Оставайтесь в ситуации и наблюдайте за реакцией — она поднимется, а потом начнёт спадать. Терпеливо дождитесь этого, не убегайте.",
+   "При необходимости дышите медленно в ходе ситуации — это помогает успокоиться, а не избежать её.",
+   "По окончании сравните уровень в начале и в конце.",
+   "Повторите это несколько раз, пока ситуация не станет казаться вам намного легче."]};
+ return {
+  theory:`Это один из <strong>самых трудных</strong> пунктов вашей лестницы (${sc}/10). К пункту такого уровня советуем возвращаться только после того, как вы немного потренируетесь на нижних, — лестница потому так и устроена: от малого к большому. Входить силой, без подготовки, может принести больше вреда, чем пользы.`,
+  practice:[
+   "Сначала убедитесь, что вы успешно выполнили нижние (более лёгкие) пункты.",
+   `Разделите «${t}» на ещё более мелкие шаги — например, перейдите от мысленного представления к наблюдению издалека, а затем к краткой прямой попытке.`,
+   "Подготовьтесь перед началом: дыхательное упражнение и, если возможно, побудьте вместе с надёжным человеком.",
+   "Войдя в ситуацию, вы можете почувствовать сильный подъём реакции — это нормально. Удерживайте себя заземлением и дыханием, не убегайте.",
+   "Если пункт кажется слишком тяжёлым или связан с сильным страхом или травмой, безопаснее и эффективнее выполнять его с помощью <strong>квалифицированного специалиста</strong> (психолога/психотерапевта).",
+   "Не торопитесь — это самый высокий этап, и естественно выделить время на то, чтобы до него дойти."]};
+}
 function ladderGuidance(it,word){
+ if(scriptMode==="ru") return ladderGuidanceRu(it);
  word = word||"xavotir";
  if(it.score<=3){
   return {
