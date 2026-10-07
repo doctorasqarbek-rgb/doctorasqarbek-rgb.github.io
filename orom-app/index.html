@@ -856,9 +856,9 @@ html.play-mode .rc-play-only{display:block}
       <h3>🔤 Til va yozuv</h3>
       <p>Ilova tilini va o'zbekcha matn alifbosini tanlang.</p>
       <div style="display:flex;gap:8px;margin-top:10px">
-        <button class="btn btn-block" id="scriptLotinBtn" style="flex:1">Lotin</button>
-        <button class="btn btn-block" id="scriptKirillBtn" style="flex:1">Кирилл</button>
-        <button class="btn btn-block" id="scriptRuBtn" style="flex:1" data-noru="1">Русский</button>
+        <button class="btn btn-block" id="scriptLotinBtn" style="flex:1;font-size:13px;padding-left:6px;padding-right:6px">O'zbek lotin</button>
+        <button class="btn btn-block" id="scriptKirillBtn" style="flex:1;font-size:13px;padding-left:6px;padding-right:6px">O'zbek kirill</button>
+        <button class="btn btn-block" id="scriptRuBtn" style="flex:1;font-size:13px;padding-left:6px;padding-right:6px" data-noru="1">Русский</button>
       </div>
     </div>
 
@@ -1030,7 +1030,7 @@ try{
 /* Tekshiruvlar haqida ma'lumot bergan darslar oxiridagi yozuv (matnni faqat shu yerdan o'zgartiring) */
 const CLINIC_NOTE = "Agar siz tekshiruvlardan o'tmagan bo'lsangiz, klinikaga qabulga kelganingizda ham tekshiruvlardan o'tib ketishingiz mumkin. <strong>Bizda tekshiruvlar mavjud.</strong>";
 let receptionReturn=null;   // "Qabul turlari" sahifasidan "orqaga" qayerga qaytishini eslab turadi (masalan, dars sahifasiga)
-const APP_VERSION = "2026.10.07-s";   // har yangi nusxada o'zgartiriladi: Sozlamalar pastida ko'rinadi (eski nusxa keshdan chiqayotganini bilish uchun)
+const APP_VERSION = "2026.10.07-t";   // har yangi nusxada o'zgartiriladi: Sozlamalar pastida ko'rinadi (eski nusxa keshdan chiqayotganini bilish uchun)
 /* Server bergan Telegram havolasi faqat https://t.me/ (yoki telegram.me) bo'lsa ishlatiladi — boshqa manzilga yo'naltirib yuborishga qarshi */
 function safeTgLink(link){
  const v=String(link||"");
