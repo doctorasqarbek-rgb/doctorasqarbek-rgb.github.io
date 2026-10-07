@@ -162,6 +162,27 @@ body{
 .pro-benefits{list-style:none;margin:16px 0 0;display:flex;flex-direction:column;gap:11px}
 .pro-benefits li{display:flex;gap:11px;align-items:flex-start;font-size:14.5px}
 .pro-benefits li .ck{flex:none;width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,.22);display:flex;align-items:center;justify-content:center;font-size:13px}
+.plan-grp{margin:18px 2px 8px;display:flex;align-items:baseline;gap:8px}
+.plan-grp b{font-family:'Fraunces';font-size:18px;letter-spacing:.04em}
+.plan-grp span{font-size:12.5px;color:var(--muted)}
+.plan-grp.premium b{color:var(--primary)}
+.plan-full{background:var(--surface);border:1.5px solid var(--line);border-radius:18px;padding:16px 18px;box-shadow:var(--shadow-sm);margin-bottom:12px}
+.plan-full.premium{border-color:var(--primary)}
+.plan-full .ph{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.plan-full h4{font-size:16px;font-weight:700}
+.plan-full .pv{font-family:'Fraunces';font-weight:600;font-size:18px;color:var(--primary);text-align:right}
+.pm{font-size:12.5px;color:var(--muted);margin:2px 0 8px}
+.pf{list-style:none;margin:0 0 12px;padding:0}
+.pf li{display:flex;gap:8px;font-size:14px;padding:3px 0;line-height:1.35}
+.pf li span{flex:0 0 18px;font-weight:700}
+.pf li.y span{color:var(--primary)}
+.pf li.strong,.pf li.n{font-weight:700}.pf li.n{color:#b3261e}.pf li.n span{color:#b3261e}
+.plan-confirm{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;display:flex;align-items:flex-end;justify-content:center}
+.plan-confirm .box{background:var(--surface,#fff);width:100%;max-width:520px;max-height:92vh;overflow:auto;border-radius:22px 22px 0 0;padding:20px 20px 24px}
+.plan-confirm .k{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.plan-confirm h3{font-size:20px;margin:4px 0}
+.plan-confirm .big{font-family:'Fraunces';font-size:26px;font-weight:700;color:var(--primary)}
+.warnbox{background:#fff4e5;border:1px solid #f0c27a;color:#7a4b00;border-radius:12px;padding:10px 12px;font-size:13.5px;margin-top:6px}
 .price-card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:16px 18px;box-shadow:var(--shadow-sm);margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;transition:border-color .2s,transform .12s}
 .price-card:active{transform:scale(.99)}
 .upgrade-card .price-card{margin-bottom:10px}
@@ -1030,7 +1051,7 @@ try{
 /* Tekshiruvlar haqida ma'lumot bergan darslar oxiridagi yozuv (matnni faqat shu yerdan o'zgartiring) */
 const CLINIC_NOTE = "Agar siz tekshiruvlardan o'tmagan bo'lsangiz, klinikaga qabulga kelganingizda ham tekshiruvlardan o'tib ketishingiz mumkin. <strong>Bizda tekshiruvlar mavjud.</strong>";
 let receptionReturn=null;   // "Qabul turlari" sahifasidan "orqaga" qayerga qaytishini eslab turadi (masalan, dars sahifasiga)
-const APP_VERSION = "2026.10.07-t";   // har yangi nusxada o'zgartiriladi: Sozlamalar pastida ko'rinadi (eski nusxa keshdan chiqayotganini bilish uchun)
+const APP_VERSION = "2026.10.07-w";   // har yangi nusxada o'zgartiriladi: Sozlamalar pastida ko'rinadi (eski nusxa keshdan chiqayotganini bilish uchun)
 /* Server bergan Telegram havolasi faqat https://t.me/ (yoki telegram.me) bo'lsa ishlatiladi — boshqa manzilga yo'naltirib yuborishga qarshi */
 function safeTgLink(link){
  const v=String(link||"");
@@ -2650,17 +2671,59 @@ function renderCourse(){
 /* TARIFLAR — narxlarni FAQAT shu yerda o'zgartiring (id lar backend/bot bilan bir xil).
    Standard: ilova + kurs va mashq videolari. Premium: + yopiq guruh. */
 const PLANS=[
- {id:"monthly_basic",     name:"Standard · 1 oy", desc:"Kurs, mashqlar va video darslar",       price:"119 000 so'm"},
- {id:"quarterly_basic",   name:"Standard · 3 oy", desc:"Kurs, mashqlar va video darslar",       price:"259 000 so'm"},
- {id:"monthly_premium",   name:"Premium · 1 oy",  desc:"Standard + jonli darslar (yopiq guruh)", price:"179 000 so'm"},
- {id:"quarterly_premium", name:"Premium · 3 oy",  desc:"Standard + jonli darslar (yopiq guruh)", price:"359 000 so'm"}
+ {id:"monthly_basic",     tier:"standard", name:"Standard · 1 oy", months:1, days:30, price:"119 000 so'm"},
+ {id:"quarterly_basic",   tier:"standard", name:"Standard · 3 oy", months:3, days:90, price:"259 000 so'm"},
+ {id:"monthly_premium",   tier:"premium",  name:"Premium · 1 oy",  months:1, days:30, price:"179 000 so'm"},
+ {id:"quarterly_premium", tier:"premium",  name:"Premium · 3 oy",  months:3, days:90, price:"359 000 so'm"}
 ];
+function planFeatures(tier){
+ const f=["Kursning barcha bo'limlari va darslari","Video darslar","Amaliy mashqlar va mashqlar kanali","Tiklanish yo'llari va kunlik rejalar"];
+ return f.map(x=>`<li class="y"><span>✓</span>${x}</li>`).join("")+(tier==="premium"
+  ?`<li class="y strong"><span>✓</span>Yopiq guruh — jonli darslar</li>`
+  :`<li class="n"><span>✕</span>Yopiq guruh YO'Q (u faqat Premium'da)</li>`);
+}
+function planCardsHtml(){
+ const grp=(tier,title,sub)=>`<div class="plan-grp ${tier}"><b>${title}</b><span>${sub}</span></div>`+
+  PLANS.filter(p=>p.tier===tier).map(p=>`<div class="plan-full ${tier}">
+    <div class="ph"><h4>${p.name}</h4><div class="pv">${p.price}</div></div>
+    <div class="pm">Muddat: ${p.months} oy (${p.days} kun)</div>
+    <ul class="pf">${planFeatures(tier)}</ul>
+    <button class="btn ${tier==="premium"?"btn-primary":"btn-soft"} btn-block" data-plan="${p.id}">${p.name} — tanlash</button>
+  </div>`).join("");
+ return grp("standard","STANDARD","Yopiq guruhsiz")+grp("premium","PREMIUM","Yopiq guruh bilan")}
+function openPlanConfirm(id){
+ const p=PLANS.find(x=>x.id===id); if(!p) return; pickedPlan=id;
+ const old=document.getElementById("planConfirm"); if(old) old.remove();
+ const d=document.createElement("div"); d.id="planConfirm"; d.className="plan-confirm";
+ d.innerHTML=`<div class="box">
+  <div class="k">Tanlovingizni tekshiring</div>
+  <h3>${p.name}</h3>
+  <div class="big">${p.price}</div>
+  <div class="pm">Muddat: ${p.months} oy (${p.days} kun)</div>
+  <ul class="pf">${planFeatures(p.tier)}</ul>
+  ${p.tier==="standard"?`<div class="warnbox">⚠️ Yopiq guruh kerak bo'lsa, Premium tarifni tanlang. Standard'da yopiq guruh ochilmaydi.</div>`:""}
+  ${PAYME_PAY
+   ?`<button class="btn btn-primary btn-block" style="margin-top:12px" id="buyPayme">Payme orqali to'lash — ${p.price}</button>
+     <button class="btn btn-ghost btn-block" style="margin-top:6px" id="payViaBot">Bot orqali to'lash</button>`
+   :`<button class="btn btn-primary btn-block" style="margin-top:12px" id="payViaBot">Ha, to'g'ri — to'lashga o'tish</button>`}
+  ${CLICK_PAY?`<button class="btn btn-primary btn-block" style="margin-top:8px" id="buyClick">Click orqali to'lash</button>`:""}
+  <button class="btn btn-soft btn-block" style="margin-top:8px" id="planBack">← Boshqa tarifni tanlash</button>
+ </div>`;
+ document.body.appendChild(d);
+ d.onclick=e=>{if(e.target===d) d.remove();};
+ document.getElementById("planBack").onclick=()=>d.remove();
+ document.getElementById("payViaBot").onclick=()=>{d.remove();payViaBot();};
+ if(PAYME_PAY) document.getElementById("buyPayme").onclick=()=>startCheckout("payme",pickedPlan);
+ if(CLICK_PAY) document.getElementById("buyClick").onclick=()=>startCheckout("click",pickedPlan);
+ if(scriptMode==="ru") try{ruRefreshView();}catch(e){}
+}
 let pickedPlan="monthly_basic";
 /* To'lov: foydalanuvchi tarifni tanlaydi -> botga o'tadi (tarif va qurilma kodi havolaga o'zi qo'yiladi,
    foydalanuvchi hech narsa yozmaydi) -> bot narxni aytadi -> chek -> admin tasdiqlaydi -> obuna faollashadi.
-   Payme/Click ulangach ONLINE_PAY ni true qiling — ularning tugmalari qaytadan ko'rinadi. */
+   Payme/Click ulangach PAYME_PAY / CLICK_PAY ni true qiling — ularning tugmalari ko'rinadi. */
 const BOT_USERNAME="Doktor_Ergashev_bot";
-const ONLINE_PAY=false;
+const PAYME_PAY=false;   // Payme kassasi sinovdan o'tib faollashgach true qiling
+const CLICK_PAY=false;   // Click ulangach true qiling
 function renderHomeProBanner(){
  const el=document.getElementById("homeProBanner");
  const vs=document.getElementById("homeVideoSub"); if(vs) vs.textContent=isPro?"To'liq video kurs — yopiq kanalda":"Bepul namunalar mavjud";
@@ -2709,21 +2772,11 @@ function renderPremium(){
   <div class="pro-hero">
     <div class="k">Obuna</div>
     <h2>Orom dasturini to'liq oching</h2>
-    <p>Bepul ${st.freeMods} bo'lim bilan tanishdingiz. Obuna bilan qolgan ${st.premMods} bo'lim, ${st.premLessons} dars, mashqlar, video darslar va boshqa imkoniyatlar ochiladi.</p>
-    <div style="margin:14px 0 2px;font-weight:600;font-size:13px;opacity:.95">Standard va Premium'da:</div>
     <ul class="pro-benefits">
-      <li><span class="ck">✓</span><span>📚 <b>Kurs:</b> qolgan ${st.premMods} bo'lim va ${st.premLessons} dars (jami ${st.total} bo'lim, ${st.totalLessons} dars)</span></li>
-      <li><span class="ck">✓</span><span>🎬 <b>Kurs videolari:</b> to'liq video kurs yopiq Telegram kanalida</span></li>
-      <li><span class="ck">✓</span><span>🏋️ <b>Amaliy mashqlar:</b> ${st.premTools} ta qo'shimcha mashq va ularning video ko'rsatmalari</span></li>
-      <li><span class="ck">✓</span><span>🧭 <b>Tiklanish yo'llari:</b> ${st.premPaths} ta yo'l — xavotir, fobiya, uyqu, yopishqoq fikrlar va boshqalar</span></li>
-      <li><span class="ck">✓</span><span>🌱 <b>Xarakterni o'zgartirish mashqlari:</b> kunlik belgilash, ilova eslatib va tabriklab boradi</span></li>
-      <li><span class="ck">✓</span><span>📅 <b>Kunlik vazifalar va maqsadlar:</b> kunlik, haftalik, oylik rejalar eslatma va mukofot bilan</span></li>
-      <li><span class="ck">✓</span><span>📝 <b>${st.premTests} ta chuqur test:</b> holatingizni kuzatib boring</span></li>
-      <li><span class="ck">✓</span><span>✨ Obuna davomida qo'shiladigan yangi darslar ham ochiq</span></li>
-    </ul>
-    <div style="margin:14px 0 2px;font-weight:600;font-size:13px;opacity:.95">Faqat Premium'da:</div>
-    <ul class="pro-benefits">
-      <li><span class="ck">✓</span><span>🔐 <b>Yopiq guruh:</b> jonli darslar shu yerda o'tkaziladi</span></li>
+      <li><span class="ck">✓</span><span>📚 <b>Kurs:</b> barcha ${st.total} bo'lim va ${st.totalLessons} dars</span></li>
+      <li><span class="ck">✓</span><span>🎬 <b>Video darslar</b> va amaliy mashqlar</span></li>
+      <li><span class="ck">✓</span><span>🧭 <b>Tiklanish yo'llari</b> va kunlik rejalar</span></li>
+      <li><span class="ck">✓</span><span>🔐 <b>Yopiq guruh</b> — faqat Premium'da</span></li>
     </ul>
   </div>
 
@@ -2735,29 +2788,19 @@ function renderPremium(){
   <button class="btn btn-primary btn-block" style="margin-top:14px" id="tgLoginBtn">✈️ Telegram orqali kirish</button>
   <button class="btn btn-soft btn-block" style="margin-top:8px" id="checkSub">Obunani tekshirish</button>
 `:`
-  <div class="sec-title" style="margin-top:4px">Tarifni tanlang</div>
-  ${PLANS.map(p=>`<div class="price-card ${pickedPlan===p.id?'pick':''}" data-plan="${p.id}">
-    <div class="pt"><h4>${p.name}</h4><span>${p.desc}</span></div>
-    <div class="pv">${p.price}</div>
-  </div>`).join("")}
-
-  <button class="btn btn-primary btn-block" style="margin-top:14px" id="payViaBot">To'lash uchun botga o'tish</button>
-  <p class="tiny" style="text-align:left;padding:8px 2px 0">Tanlangan tarif: <b>${sel.name} — ${sel.price}</b>. Bot to'lov ma'lumotlarini ko'rsatadi. To'lov chekini yuborganingizdan keyin administrator tasdiqlaydi va obunangiz faollashadi.</p>
-  ${ONLINE_PAY?`<button class="btn btn-primary btn-block" style="margin-top:8px" id="buyPayme">Payme orqali to'lash</button>
-  <button class="btn btn-primary btn-block" style="margin-top:8px" id="buyClick">Click orqali to'lash</button>`:""}
-  <button class="btn btn-soft btn-block" style="margin-top:14px" id="checkSub">Obunani tekshirish</button>
-  <button class="btn btn-ghost btn-block" style="margin-top:6px" id="tgLoginBtn">Botda to'lagan bo'lsangiz: Telegram orqali kirish</button>
-  <p class="tiny" style="text-align:left;padding:6px 2px 0">To'lov tasdiqlangach, shu tugmani bosing yoki ilovaga qaytib kiring: obuna o'zi yangilanadi.</p>`}`;
+  <div class="sec-title" style="margin-top:4px">4 ta tarif — farqini diqqat bilan o'qing</div>
+  <p class="tiny" style="text-align:left;padding:0 2px 8px">Har bir tarifda nimalar borligi va nimalar yo'qligi pastda ko'rsatilgan. Yopiq guruh faqat Premium'da.</p>
+  ${planCardsHtml()}
+  <details class="disc" style="margin-top:18px">
+    <summary style="cursor:pointer;font-weight:600">Allaqachon to'laganmisiz?</summary>
+    <button class="btn btn-soft btn-block" style="margin-top:12px" id="checkSub">Obunani tekshirish</button>
+    <button class="btn btn-ghost btn-block" style="margin-top:6px" id="tgLoginBtn">✈️ Telegram orqali kirish</button>
+  </details>`}`;
 
  document.getElementById("checkSub").onclick=checkSubscriptionNow;
  {const tl=document.getElementById("tgLoginBtn"); if(tl) tl.onclick=startTgLogin;}
  if(PLAY_MODE) return;
- el.querySelectorAll(".price-card").forEach(c=>c.onclick=()=>{pickedPlan=c.dataset.plan;renderPremium();show("premium");});
- document.getElementById("payViaBot").onclick=payViaBot;
- if(ONLINE_PAY){
-  document.getElementById("buyPayme").onclick=()=>startCheckout("payme",pickedPlan);
-  document.getElementById("buyClick").onclick=()=>startCheckout("click",pickedPlan);
- }
+ el.querySelectorAll(".plan-full button[data-plan]").forEach(c=>c.onclick=()=>openPlanConfirm(c.dataset.plan));
 }
 async function loadGroupAccess(){
  const slot=document.getElementById("groupSlot");
