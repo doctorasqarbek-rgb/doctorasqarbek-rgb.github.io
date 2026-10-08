@@ -1051,7 +1051,7 @@ try{
 /* Tekshiruvlar haqida ma'lumot bergan darslar oxiridagi yozuv (matnni faqat shu yerdan o'zgartiring) */
 const CLINIC_NOTE = "Agar siz tekshiruvlardan o'tmagan bo'lsangiz, klinikaga qabulga kelganingizda ham tekshiruvlardan o'tib ketishingiz mumkin. <strong>Bizda tekshiruvlar mavjud.</strong>";
 let receptionReturn=null;   // "Qabul turlari" sahifasidan "orqaga" qayerga qaytishini eslab turadi (masalan, dars sahifasiga)
-const APP_VERSION = "2026.10.08-x";   // har yangi nusxada o'zgartiriladi: Sozlamalar pastida ko'rinadi (eski nusxa keshdan chiqayotganini bilish uchun)
+const APP_VERSION = "2026.10.08-y";   // har yangi nusxada o'zgartiriladi: Sozlamalar pastida ko'rinadi (eski nusxa keshdan chiqayotganini bilish uchun)
 /* Server bergan Telegram havolasi faqat https://t.me/ (yoki telegram.me) bo'lsa ishlatiladi — boshqa manzilga yo'naltirib yuborishga qarshi */
 function safeTgLink(link){
  const v=String(link||"");
@@ -1327,6 +1327,7 @@ async function registerDeviceIfNeeded(){
 /* Serverdan haqiqiy obuna holatini so'raydi. Muvaffaqiyatli bo'lsa isPro'ni
    yangilaydi va keshlaydi; xato bo'lsa (internet yo'q) oxirgi keshlangan
    qiymatda qoladi — ilova hech qachon "osilib qolmaydi". */
+let lastSubStatus=null;
 async function refreshProFromServer(){
  if(!backendReady()) return;
  try{
@@ -1334,6 +1335,7 @@ async function refreshProFromServer(){
   const res=await fetch(BACKEND_URL+"/api/subscription-status?deviceId="+encodeURIComponent(deviceId));
   if(!res.ok) return;
   const data=await res.json();
+  lastSubStatus=data;
   isPro=!!data.active;
   userTier=data.tier||"basic";
   await Store.set("pro",isPro?"1":"0");
@@ -1473,6 +1475,7 @@ async function startCheckout(provider, plan){
   const data=await res.json();
   const url = provider==="click" ? data.clickUrl : data.paymeUrl;
   if(!url) throw new Error("Havola topilmadi");
+  await markPayPending(plan);
   location.href=url; // foydalanuvchi to'lov sahifasiga o'tadi, to'lagach ilovaga qaytadi
  }catch(e){
   toast("Xatolik: buyurtma yaratilmadi. Internetni tekshiring.");
@@ -2006,6 +2009,7 @@ async function payViaBot(){
   if(!res.ok) throw new Error("HTTP "+res.status);
   const data=await res.json();
   if(!data.code) throw new Error("kod yo'q");
+  await markPayPending(pickedPlan);
   location.href="https://t.me/"+BOT_USERNAME+"?start="+encodeURIComponent(pickedPlan+"_"+data.code);
  }catch(e){
   toast("Xatolik: internetni tekshiring va qayta urinib ko'ring");
@@ -2062,6 +2066,60 @@ async function upgradeViaBot(){
   toast("Xatolik: internetni tekshiring va qayta urinib ko'ring");
  }
 }
+
+
+/* ===== TO'LOVDAN KEYIN "OBUNA FAOLLASHDI" XABARI =====
+   To'lovga (Payme yoki bot) o'tishdan oldin tanlangan tarif va hozirgi tugash sanasi saqlanadi.
+   Ilovaga qaytilganda (sahifa qayta ochilsa ham) server tekshiriladi; obuna yangilangan bo'lsa,
+   tanlangan tarif bilan katta tabrik oynasi chiqadi. */
+const PAY_PLAN_NAMES={monthly_basic:"Standard · 1 oy",quarterly_basic:"Standard · 3 oy",monthly_premium:"Premium · 1 oy",quarterly_premium:"Premium · 3 oy"};
+async function markPayPending(plan){
+ try{ await Store.set("payPending",JSON.stringify({plan,ts:Date.now(),exp0:(lastSubStatus&&lastSubStatus.active&&lastSubStatus.expiresAt)||0})); }catch(e){}
+}
+function showPaidModal(plan,st){
+ const old=document.getElementById("paidModal"); if(old) old.remove();
+ const name=PAY_PLAN_NAMES[plan]||((st&&st.tier==="premium")?"Premium":"Standard");
+ const prem=(st&&st.tier==="premium")||/premium/.test(plan||"");
+ const until=(st&&st.expiresAt)?fmtUzDate(st.expiresAt):"";
+ const d=document.createElement("div"); d.id="paidModal"; d.className="plan-confirm";
+ d.innerHTML=`<div class="box" style="text-align:center">
+  <div style="font-size:54px;line-height:1">✅</div>
+  <h3 style="margin-top:10px">Obuna faollashdi!</h3>
+  <div class="big" style="font-size:22px">${name}</div>
+  ${until?`<div class="pm" style="margin-top:6px;font-weight:600">Amal qilish muddati: ${until} gacha</div>`:""}
+  <ul class="pf" style="text-align:left;margin-top:12px">${planFeatures(prem?"premium":"standard")}</ul>
+  ${prem?`<p class="tiny" style="text-align:left;padding:0 0 6px">Yopiq guruh va mashqlar kanaliga kirish tugmalari «Obuna» bo'limida.</p>`:""}
+  <button class="btn btn-primary btn-block" id="paidOk">Davom etish</button>
+ </div>`;
+ document.body.appendChild(d);
+ document.getElementById("paidOk").onclick=()=>{d.remove();renderPremium();show("premium");};
+ if(scriptMode==="ru") try{ruRefreshView();}catch(e){}
+}
+let payWatching=false;
+async function watchPayment(){
+ if(PLAY_MODE||payWatching||!backendReady()) return;
+ let p=null;
+ try{ const r=await Store.get("payPending"); if(r) p=JSON.parse(r); }catch(e){}
+ if(!p||!p.plan) return;
+ if(Date.now()-p.ts>24*3600*1000){ try{await Store.set("payPending","");}catch(e){} return; }
+ payWatching=true;
+ try{
+  const fresh=Date.now()-p.ts<20*60*1000;           // yaqinda to'lashga o'tgan — bir necha daqiqa kutamiz
+  const tries=fresh?40:1;                          // 40 × 3 soniya = 2 daqiqa; eski bo'lsa bir marta tekshiramiz
+  for(let i=0;i<tries;i++){
+   await refreshProFromServer();
+   const st=lastSubStatus;
+   if(st&&st.active&&(st.expiresAt||0)>(p.exp0||0)){
+    try{await Store.set("payPending","");}catch(e){}
+    renderPremium();renderHomeProBanner();renderHomeMods();renderCourse();refreshAll();
+    showPaidModal(p.plan,st);
+    return;
+   }
+   if(i<tries-1) await new Promise(r=>setTimeout(r,3000));
+  }
+ }finally{ payWatching=false; }
+}
+document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="visible") watchPayment(); });
 
 /* "Obunani tekshirish" — admin tasdiqlagandan keyin ilovada holatni yangilaydi. */
 async function checkSubscriptionNow(){
@@ -4262,6 +4320,7 @@ function renderAll(){renderHomePushPrompt();refreshProgress();renderHomeProBanne
  await loadTests();        // testlarni yuklaymiz
  renderTests();
  if(fresh) console.log("Kontent yangilandi:",COURSE.length,"bo'lim");
+ watchPayment();           // to'lovdan qaytgan bo'lsa: obuna faollashganini tekshirib, tabrik oynasini ko'rsatadi
 })();
 </script>
 </body>
