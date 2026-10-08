@@ -1051,7 +1051,7 @@ try{
 /* Tekshiruvlar haqida ma'lumot bergan darslar oxiridagi yozuv (matnni faqat shu yerdan o'zgartiring) */
 const CLINIC_NOTE = "Agar siz tekshiruvlardan o'tmagan bo'lsangiz, klinikaga qabulga kelganingizda ham tekshiruvlardan o'tib ketishingiz mumkin. <strong>Bizda tekshiruvlar mavjud.</strong>";
 let receptionReturn=null;   // "Qabul turlari" sahifasidan "orqaga" qayerga qaytishini eslab turadi (masalan, dars sahifasiga)
-const APP_VERSION = "2026.10.07-w";   // har yangi nusxada o'zgartiriladi: Sozlamalar pastida ko'rinadi (eski nusxa keshdan chiqayotganini bilish uchun)
+const APP_VERSION = "2026.10.08-x";   // har yangi nusxada o'zgartiriladi: Sozlamalar pastida ko'rinadi (eski nusxa keshdan chiqayotganini bilish uchun)
 /* Server bergan Telegram havolasi faqat https://t.me/ (yoki telegram.me) bo'lsa ishlatiladi — boshqa manzilga yo'naltirib yuborishga qarshi */
 function safeTgLink(link){
  const v=String(link||"");
@@ -2722,7 +2722,7 @@ let pickedPlan="monthly_basic";
    foydalanuvchi hech narsa yozmaydi) -> bot narxni aytadi -> chek -> admin tasdiqlaydi -> obuna faollashadi.
    Payme/Click ulangach PAYME_PAY / CLICK_PAY ni true qiling — ularning tugmalari ko'rinadi. */
 const BOT_USERNAME="Doktor_Ergashev_bot";
-const PAYME_PAY=false;   // Payme kassasi sinovdan o'tib faollashgach true qiling
+const PAYME_PAY=true;    // Payme sandbox sinovi o'tdi — tugma yoqildi
 const CLICK_PAY=false;   // Click ulangach true qiling
 function renderHomeProBanner(){
  const el=document.getElementById("homeProBanner");
