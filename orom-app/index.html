@@ -1051,7 +1051,7 @@ try{
 /* Tekshiruvlar haqida ma'lumot bergan darslar oxiridagi yozuv (matnni faqat shu yerdan o'zgartiring) */
 const CLINIC_NOTE = "Agar siz tekshiruvlardan o'tmagan bo'lsangiz, klinikaga qabulga kelganingizda ham tekshiruvlardan o'tib ketishingiz mumkin. <strong>Bizda tekshiruvlar mavjud.</strong>";
 let receptionReturn=null;   // "Qabul turlari" sahifasidan "orqaga" qayerga qaytishini eslab turadi (masalan, dars sahifasiga)
-const APP_VERSION = "2026.10.09-z";   // har yangi nusxada o'zgartiriladi: Sozlamalar pastida ko'rinadi (eski nusxa keshdan chiqayotganini bilish uchun)
+const APP_VERSION = "2026.10.10-a";   // har yangi nusxada o'zgartiriladi: Sozlamalar pastida ko'rinadi (eski nusxa keshdan chiqayotganini bilish uchun)
 /* Server bergan Telegram havolasi faqat https://t.me/ (yoki telegram.me) bo'lsa ishlatiladi — boshqa manzilga yo'naltirib yuborishga qarshi */
 function safeTgLink(link){
  const v=String(link||"");
@@ -2096,6 +2096,30 @@ function showPaidModal(plan,st){
  if(scriptMode==="ru") try{ruRefreshView();}catch(e){}
 }
 let payWatching=false;
+/* ===== AVTOMATIK YANGILANISH =====
+   Ilova ochilganda (va fondan qaytganda) serverdagi eng yangi index.html versiyasini so'raydi.
+   Versiya farq qilsa — sahifani bir marta o'zi yangilaydi. Kesh tozalash kerak emas.
+   Xavfsizlik: bir versiya uchun sessiyada faqat 1 marta; oyna ochiq yoki matn yozilayotgan bo'lsa — kutadi. */
+let _updLast=0;
+async function checkAppUpdate(){
+ try{
+  const now=Date.now(); if(now-_updLast<60000) return; _updLast=now;
+  if(!navigator.onLine) return;
+  const r=await fetch("./index.html?_="+now,{cache:"no-store"});
+  if(!r.ok) return;
+  const txt=await r.text();
+  const m=/const APP_VERSION = "([^"]+)"/.exec(txt);
+  if(!m || m[1]===APP_VERSION) return;
+  let tried=""; try{ tried=sessionStorage.getItem("updTried")||""; }catch(e){}
+  if(tried===m[1]) return;                               // shu versiya uchun allaqachon urinib ko'rilgan (sikl bo'lmasin)
+  const ae=document.activeElement, typing=ae&&/^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName);
+  if(typing || document.getElementById("planConfirm") || document.getElementById("paidModal")){ _updLast=0; return; }
+  try{ sessionStorage.setItem("updTried",m[1]); }catch(e){}
+  location.reload();
+ }catch(e){ /* tarmoq xatosi — jim o'tamiz */ }
+}
+document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="visible") checkAppUpdate(); });
+
 async function watchPayment(){
  if(PLAY_MODE||payWatching||!backendReady()) return;
  let p=null;
@@ -4320,6 +4344,7 @@ function renderAll(){renderHomePushPrompt();refreshProgress();renderHomeProBanne
  await loadTests();        // testlarni yuklaymiz
  renderTests();
  if(fresh) console.log("Kontent yangilandi:",COURSE.length,"bo'lim");
+ checkAppUpdate();         // yangi versiya chiqqan bo'lsa — o'zi yangilanadi
  watchPayment();           // to'lovdan qaytgan bo'lsa: obuna faollashganini tekshirib, tabrik oynasini ko'rsatadi
 })();
 </script>
