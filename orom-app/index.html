@@ -1051,7 +1051,7 @@ try{
 /* Tekshiruvlar haqida ma'lumot bergan darslar oxiridagi yozuv (matnni faqat shu yerdan o'zgartiring) */
 const CLINIC_NOTE = "Agar siz tekshiruvlardan o'tmagan bo'lsangiz, klinikaga qabulga kelganingizda ham tekshiruvlardan o'tib ketishingiz mumkin. <strong>Bizda tekshiruvlar mavjud.</strong>";
 let receptionReturn=null;   // "Qabul turlari" sahifasidan "orqaga" qayerga qaytishini eslab turadi (masalan, dars sahifasiga)
-const APP_VERSION = "2026.10.08-y";   // har yangi nusxada o'zgartiriladi: Sozlamalar pastida ko'rinadi (eski nusxa keshdan chiqayotganini bilish uchun)
+const APP_VERSION = "2026.10.09-z";   // har yangi nusxada o'zgartiriladi: Sozlamalar pastida ko'rinadi (eski nusxa keshdan chiqayotganini bilish uchun)
 /* Server bergan Telegram havolasi faqat https://t.me/ (yoki telegram.me) bo'lsa ishlatiladi — boshqa manzilga yo'naltirib yuborishga qarshi */
 function safeTgLink(link){
  const v=String(link||"");
@@ -2760,11 +2760,11 @@ function openPlanConfirm(id){
   <div class="pm">Muddat: ${p.months} oy (${p.days} kun)</div>
   <ul class="pf">${planFeatures(p.tier)}</ul>
   ${p.tier==="standard"?`<div class="warnbox">⚠️ Yopiq guruh kerak bo'lsa, Premium tarifni tanlang. Standard'da yopiq guruh ochilmaydi.</div>`:""}
-  ${PAYME_PAY
-   ?`<button class="btn btn-primary btn-block" style="margin-top:12px" id="buyPayme">Payme orqali to'lash — ${p.price}</button>
-     <button class="btn btn-ghost btn-block" style="margin-top:6px" id="payViaBot">Bot orqali to'lash</button>`
+  ${PAYME_PAY?`<button class="btn btn-primary btn-block" style="margin-top:12px" id="buyPayme">Payme orqali to'lash — ${p.price}</button>`:""}
+  ${CLICK_PAY?`<button class="btn btn-primary btn-block" style="margin-top:8px" id="buyClick">Click orqali to'lash — ${p.price}</button>`:""}
+  ${(PAYME_PAY||CLICK_PAY)
+   ?`<button class="btn btn-ghost btn-block" style="margin-top:6px" id="payViaBot">Bot orqali to'lash</button>`
    :`<button class="btn btn-primary btn-block" style="margin-top:12px" id="payViaBot">Ha, to'g'ri — to'lashga o'tish</button>`}
-  ${CLICK_PAY?`<button class="btn btn-primary btn-block" style="margin-top:8px" id="buyClick">Click orqali to'lash</button>`:""}
   <button class="btn btn-soft btn-block" style="margin-top:8px" id="planBack">← Boshqa tarifni tanlash</button>
  </div>`;
  document.body.appendChild(d);
@@ -2781,7 +2781,7 @@ let pickedPlan="monthly_basic";
    Payme/Click ulangach PAYME_PAY / CLICK_PAY ni true qiling — ularning tugmalari ko'rinadi. */
 const BOT_USERNAME="Doktor_Ergashev_bot";
 const PAYME_PAY=true;    // Payme sandbox sinovi o'tdi — tugma yoqildi
-const CLICK_PAY=false;   // Click ulangach true qiling
+const CLICK_PAY=true;    // Click xizmati faollashtirildi — tugma yoqildi
 function renderHomeProBanner(){
  const el=document.getElementById("homeProBanner");
  const vs=document.getElementById("homeVideoSub"); if(vs) vs.textContent=isPro?"To'liq video kurs — yopiq kanalda":"Bepul namunalar mavjud";
