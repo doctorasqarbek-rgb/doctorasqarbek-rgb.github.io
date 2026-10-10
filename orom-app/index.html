@@ -1066,7 +1066,7 @@ try{
 /* Tekshiruvlar haqida ma'lumot bergan darslar oxiridagi yozuv (matnni faqat shu yerdan o'zgartiring) */
 const CLINIC_NOTE = "Agar siz tekshiruvlardan o'tmagan bo'lsangiz, klinikaga qabulga kelganingizda ham tekshiruvlardan o'tib ketishingiz mumkin. <strong>Bizda tekshiruvlar mavjud.</strong>";
 let receptionReturn=null;   // "Qabul turlari" sahifasidan "orqaga" qayerga qaytishini eslab turadi (masalan, dars sahifasiga)
-const APP_VERSION = "2026.10.10-a";   // har yangi nusxada o'zgartiriladi: Sozlamalar pastida ko'rinadi (eski nusxa keshdan chiqayotganini bilish uchun)
+const APP_VERSION = "2026.10.10-c";   // har yangi nusxada o'zgartiriladi: Sozlamalar pastida ko'rinadi (eski nusxa keshdan chiqayotganini bilish uchun)
 /* Server bergan Telegram havolasi faqat https://t.me/ (yoki telegram.me) bo'lsa ishlatiladi — boshqa manzilga yo'naltirib yuborishga qarshi */
 function safeTgLink(link){
  const v=String(link||"");
@@ -2032,7 +2032,7 @@ async function payViaBot(){
 }
 
 /* ===== STANDARDDAN PREMIUMGA O'TISH =====
-   Narx serverda hisoblanadi: Premium narxi − Standarddan ishlatilmagan (qolgan) kunlar qiymati.
+   Narx serverda hisoblanadi: Premium narxi − Standard narxi (to'liq farq).
    Premium muddati to'lov tasdiqlangan kundan boshlab YANGIDAN (1 yoki 3 oy) hisoblanadi.
    To'lov: bot orqali (chek -> admin tasdiqlaydi), kod yozish shart emas. */
 let pickedUpgrade=null, upgradeQuote=null;
@@ -2056,7 +2056,7 @@ async function loadUpgradeCard(host){
  const name={monthly_premium:"Premium · 1 oy",quarterly_premium:"Premium · 3 oy"};
  el.innerHTML=`<div class="tool-card upgrade-card" style="margin-top:16px">
    <h3>⭐ Premiumga o'tish</h3>
-   <p class="tiny" style="text-align:left;padding:0 0 8px">Hozirgi obunangiz: <b>Standard</b>, ${fmtUzDate(q.expiresAt)} gacha (${q.remainingDays} kun qoladi). Standarddan qolgan ${q.remainingDays} kun qiymati (<b>${fmtSom(q.credit)}</b>) Premium narxidan ayriladi.</p>
+   <p class="tiny" style="text-align:left;padding:0 0 8px">Hozirgi obunangiz: <b>Standard</b>, ${fmtUzDate(q.expiresAt)} gacha (${q.remainingDays} kun qoladi). Premium narxidan Standard narxi (<b>${fmtSom(q.credit)}</b>) ayriladi. Standardning qolgan kunlari Premium muddatiga qo'shilmaydi.</p>
    ${opts.map(o=>`<div class="price-card ${pickedUpgrade===o.plan?'pick':''}" data-up="${o.plan}">
      <div class="pt"><h4>${name[o.plan]}</h4><span>To'lov kunidan ${fmtUzDate(o.newExpiresAt)} gacha</span><span style="display:block">${fmtSom(o.fullPrice)} − ${fmtSom(o.credit)}</span></div>
      <div class="pv">${fmtSom(o.price)}</div>
@@ -4365,3 +4365,4 @@ function renderAll(){renderHomePushPrompt();refreshProgress();renderHomeProBanne
 </script>
 </body>
 </html>
+
