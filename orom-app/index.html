@@ -1072,7 +1072,7 @@ try{
 /* Tekshiruvlar haqida ma'lumot bergan darslar oxiridagi yozuv (matnni faqat shu yerdan o'zgartiring) */
 const CLINIC_NOTE = "Agar siz tekshiruvlardan o'tmagan bo'lsangiz, klinikaga qabulga kelganingizda ham tekshiruvlardan o'tib ketishingiz mumkin. <strong>Bizda tekshiruvlar mavjud.</strong>";
 let receptionReturn=null;   // "Qabul turlari" sahifasidan "orqaga" qayerga qaytishini eslab turadi (masalan, dars sahifasiga)
-const APP_VERSION = "2026.10.10-d";   // har yangi nusxada o'zgartiriladi: Sozlamalar pastida ko'rinadi (eski nusxa keshdan chiqayotganini bilish uchun)
+const APP_VERSION = "2026.10.10-f";   // har yangi nusxada o'zgartiriladi: Sozlamalar pastida ko'rinadi (eski nusxa keshdan chiqayotganini bilish uchun)
 /* Server bergan Telegram havolasi faqat https://t.me/ (yoki telegram.me) bo'lsa ishlatiladi — boshqa manzilga yo'naltirib yuborishga qarshi */
 function safeTgLink(link){
  const v=String(link||"");
@@ -1921,7 +1921,7 @@ async function loadProfile(){
   ? `<div class="disc"><h3>✈️ Telegram akkaunt</h3><p>✅ Ulangan. Obunangiz akkauntga bog'langan: boshqa telefonda ham Telegram orqali kirsangiz ochiladi.</p></div>`
   : `<div class="disc"><h3>✈️ Telegram akkaunt</h3><p>Ulanmagan. Telegram orqali kirsangiz, obunangiz akkauntga bog'lanadi va telefon almashtirsangiz ham qaytadi.</p><button class="btn btn-primary btn-block" id="pfTg" style="margin-top:8px">✈️ Telegram orqali kirish</button></div>`;
  let grp="";
- if(p.active&&p.tier==="premium") grp=`<div class="disc"><h3>🔒 Yopiq guruh</h3><p>Jonli darslar yopiq guruhda o'tkaziladi.</p><button class="btn btn-sage btn-block" id="pfGroup" style="margin-top:8px">Guruhga qo'shilish</button><div class="tiny" id="pfGroupMsg" style="padding-top:6px"></div></div>`;
+ if(p.active&&p.tier==="premium") grp=`<div class="disc"><h3>🔒 Yopiq guruh</h3><p>Doktor bilan birga yopiq darslar va maslahatlar yopiq guruhda o'tkaziladi.</p><button class="btn btn-sage btn-block" id="pfGroup" style="margin-top:8px">Guruhga qo'shilish</button><div class="tiny" id="pfGroupMsg" style="padding-top:6px"></div></div>`;
  else grp=`<div class="disc"><h3>🔒 Yopiq guruh</h3><p>Premium obuna egalari uchun.</p></div>`;
  const hist=(p.payments||[]).length
   ? (p.payments||[]).map(x=>`<div style="display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid var(--line)"><span>${pfDate(x.paidAt)} · ${pfEsc(PLAN_NAMES[x.plan]||x.plan)}</span>${PLAY_MODE?"":'<b>'+Number(x.amount).toLocaleString("ru-RU").replace(/\u00a0/g," ")+" so'm</b>"}</div>`).join("")
@@ -2067,7 +2067,7 @@ async function loadUpgradeCard(host){
      <div class="pt"><h4>${name[o.plan]}</h4><span>To'lov kunidan ${fmtUzDate(o.newExpiresAt)} gacha</span><span style="display:block">${fmtSom(o.fullPrice)} − ${fmtSom(o.credit)}</span></div>
      <div class="pv">${fmtSom(o.price)}</div>
    </div>`).join("")}
-   <p class="tiny" style="text-align:left;padding:0 0 8px">Premium muddati to'lov tasdiqlangan kundan boshlab yangidan hisoblanadi. Premium'da qo'shimcha: yopiq guruh (jonli darslar).</p>
+   <p class="tiny" style="text-align:left;padding:0 0 8px">Premium muddati to'lov tasdiqlangan kundan boshlab yangidan hisoblanadi. Premium'da qo'shimcha: doktor bilan birga yopiq darslar va maslahatlar.</p>
    <button class="btn btn-primary btn-block upgradeBotBtn">Premiumga o'tish: botda to'lash</button>
   </div>`;
  el.querySelectorAll("[data-up]").forEach(c=>c.onclick=()=>{pickedUpgrade=c.dataset.up;loadUpgradeCard(el);});
@@ -2772,7 +2772,7 @@ function renderCourse(){
 
 /* ---------- Premium ---------- */
 /* TARIFLAR — narxlarni FAQAT shu yerda o'zgartiring (id lar backend/bot bilan bir xil).
-   Standard: ilova + kurs va mashq videolari. Premium: + yopiq guruh. */
+   Standard: ilova + kurs va mashq videolari. Premium: + doktor bilan yopiq darslar va maslahatlar (yopiq guruh). */
 const PLANS=[
  {id:"monthly_basic",     tier:"standard", name:"Standard · 1 oy", months:1, days:30, price:"119 000 so'm"},
  {id:"quarterly_basic",   tier:"standard", name:"Standard · 3 oy", months:3, days:90, price:"259 000 so'm"},
@@ -2782,8 +2782,8 @@ const PLANS=[
 function planFeatures(tier){
  const f=["Kursning barcha bo'limlari va darslari","Video darslar","Amaliy mashqlar va mashqlar kanali","Tiklanish yo'llari va kunlik rejalar"];
  return f.map(x=>`<li class="y"><span>✓</span>${x}</li>`).join("")+(tier==="premium"
-  ?`<li class="y strong"><span>✓</span>Yopiq guruh — jonli darslar</li>`
-  :`<li class="n"><span>✕</span>Yopiq guruh YO'Q (u faqat Premium'da)</li>`);
+  ?`<li class="y strong"><span>✓</span>Doktor bilan birga yopiq darslar va maslahatlar</li>`
+  :"");
 }
 function planCardsHtml(){
  const grp=(tier,title,sub)=>`<div class="plan-grp ${tier}"><b>${title}</b><span>${sub}</span></div>`+
@@ -2793,7 +2793,7 @@ function planCardsHtml(){
     <ul class="pf">${planFeatures(tier)}</ul>
     <button class="btn ${tier==="premium"?"btn-primary":"btn-soft"} btn-block" data-plan="${p.id}">${p.name} — tanlash</button>
   </div>`).join("");
- return grp("standard","STANDARD","Yopiq guruhsiz")+grp("premium","PREMIUM","Yopiq guruh bilan")}
+ return grp("standard","STANDARD","Ilova va video darslar")+grp("premium","PREMIUM","Doktor bilan yopiq darslar va maslahatlar")}
 function openPlanConfirm(id){
  const p=PLANS.find(x=>x.id===id); if(!p) return; pickedPlan=id;
  const old=document.getElementById("planConfirm"); if(old) old.remove();
@@ -2804,7 +2804,6 @@ function openPlanConfirm(id){
   <div class="big">${p.price}</div>
   <div class="pm">Muddat: ${p.months} oy (${p.days} kun)</div>
   <ul class="pf">${planFeatures(p.tier)}</ul>
-  ${p.tier==="standard"?`<div class="warnbox">⚠️ Yopiq guruh kerak bo'lsa, Premium tarifni tanlang. Standard'da yopiq guruh ochilmaydi.</div>`:""}
   ${PAYME_PAY?`<button class="btn btn-primary btn-block" style="margin-top:12px" id="buyPayme">Payme orqali to'lash — ${p.price}</button>`:""}
   ${CLICK_PAY?`<button class="btn btn-primary btn-block" style="margin-top:8px" id="buyClick">Click orqali to'lash — ${p.price}</button>`:""}
   ${(PAYME_PAY||CLICK_PAY)
@@ -2880,7 +2879,7 @@ function renderPremium(){
       <li><span class="ck">✓</span><span>📚 <b>Kurs:</b> barcha ${st.total} bo'lim va ${st.totalLessons} dars</span></li>
       <li><span class="ck">✓</span><span>🎬 <b>Video darslar</b> va amaliy mashqlar</span></li>
       <li><span class="ck">✓</span><span>🧭 <b>Tiklanish yo'llari</b> va kunlik rejalar</span></li>
-      <li><span class="ck">✓</span><span>🔐 <b>Yopiq guruh</b> — faqat Premium'da</span></li>
+      <li><span class="ck">✓</span><span>🔐 <b>Doktor bilan yopiq darslar va maslahatlar</b> — faqat Premium'da</span></li>
     </ul>
   </div>
 
@@ -2893,7 +2892,7 @@ function renderPremium(){
   <button class="btn btn-soft btn-block" style="margin-top:8px" id="checkSub">Obunani tekshirish</button>
 `:`
   <div class="sec-title" style="margin-top:4px">4 ta tarif — farqini diqqat bilan o'qing</div>
-  <p class="tiny" style="text-align:left;padding:0 2px 8px">Har bir tarifda nimalar borligi va nimalar yo'qligi pastda ko'rsatilgan. Yopiq guruh faqat Premium'da.</p>
+  <p class="tiny" style="text-align:left;padding:0 2px 8px">Har bir tarifda nimalar borligi va nimalar yo'qligi pastda ko'rsatilgan. Doktor bilan yopiq darslar va maslahatlar faqat Premium'da.</p>
   ${planCardsHtml()}
   <details class="disc" style="margin-top:18px">
     <summary style="cursor:pointer;font-weight:600">Allaqachon to'laganmisiz?</summary>
@@ -2916,8 +2915,8 @@ async function loadGroupAccess(){
   const data=await res.json();
   if(res.status===403){
    slot.innerHTML=PLAY_MODE
-    ? `<p class="tiny" style="text-align:left;padding:0">Yopiq guruh (jonli darslar shu yerda o'tkaziladi) — faqat <b>Premium</b> tarifda mavjud.</p>`
-    : `<p class="tiny" style="text-align:left;padding:0">Yopiq guruh (jonli darslar shu yerda o'tkaziladi) — faqat <b>Premium</b> tarifda mavjud. Yuqoridagi «Premiumga o'tish» orqali narx farqini to'lab o'tishingiz mumkin.</p>`;
+    ? `<p class="tiny" style="text-align:left;padding:0">Doktor bilan birga yopiq darslar va maslahatlar (yopiq guruhda o'tkaziladi) — faqat <b>Premium</b> tarifda mavjud.</p>`
+    : `<p class="tiny" style="text-align:left;padding:0">Doktor bilan birga yopiq darslar va maslahatlar (yopiq guruhda o'tkaziladi) — faqat <b>Premium</b> tarifda mavjud. Yuqoridagi «Premiumga o'tish» orqali narx farqini to'lab o'tishingiz mumkin.</p>`;
    return;
   }
   if(!res.ok) throw new Error();
