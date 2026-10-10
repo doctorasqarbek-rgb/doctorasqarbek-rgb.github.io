@@ -3,11 +3,26 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<!-- XAVFSIZLIK: kontent siyosati. Faqat shu manbalarga ruxsat: o'z fayllari, Google Fonts, YouTube video, Orom backend.
+<!-- XAVFSIZLIK: kontent siyosati. Faqat shu manbalarga ruxsat: o'z fayllari, Google Fonts, YouTube video, Orom backend, Meta Pixel (faqat reklama statistikasi uchun).
      Begona domendan skript yuklash, ma'lumotni begona manzilga yuborish va begona ramka (iframe) ochish bloklanadi. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https:; media-src 'self' https: data: blob:; frame-src https://www.youtube.com https://www.youtube-nocookie.com; connect-src 'self' https://orom-backend.onrender.com; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://connect.facebook.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https:; media-src 'self' https: data: blob:; frame-src https://www.youtube.com https://www.youtube-nocookie.com; connect-src 'self' https://orom-backend.onrender.com https://www.facebook.com https://connect.facebook.net; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="theme-color" content="#20243B">
 <title>Orom — Psixoterapiya darslari</title>
+<!-- Meta Pixel Code: faqat PageView. Avtomatik tugma/forma kuzatuvi o'chirilgan (shaxsiy matnlar Meta'ga ketmasligi uchun). -->
+<script>
+!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window, document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('set', 'autoConfig', false, '1699786344853527');
+fbq('init', '1699786344853527');
+fbq('track', 'PageView');
+</script>
+<!-- End Meta Pixel Code -->
 <link rel="manifest" href="./manifest.json">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -4350,4 +4365,3 @@ function renderAll(){renderHomePushPrompt();refreshProgress();renderHomeProBanne
 </script>
 </body>
 </html>
-
