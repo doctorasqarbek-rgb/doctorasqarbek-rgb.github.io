@@ -10,6 +10,10 @@
 <title>Orom — Psixoterapiya darslari</title>
 <!-- Meta Pixel Code: faqat PageView. Avtomatik tugma/forma kuzatuvi o'chirilgan (shaxsiy matnlar Meta'ga ketmasligi uchun). -->
 <script>
+/* Play paketida (yoki ?play=1) Pixel umuman yuklanmaydi */
+var OROM_NO_PIXEL=false;
+try{var _r=document.referrer||"",_q=new URLSearchParams(location.search).get("play");OROM_NO_PIXEL=_r.indexOf("android-app://uz.orom.app")===0||_q==="1"||(_q!=="0"&&sessionStorage.getItem("orom:play")==="1");}catch(e){}
+if(OROM_NO_PIXEL){window.fbq=function(){};}else{
 !function(f,b,e,v,n,t,s)
 {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
 n.callMethod.apply(n,arguments):n.queue.push(arguments)};
@@ -21,11 +25,13 @@ s.parentNode.insertBefore(t,s)}(window, document,'script',
 fbq('set', 'autoConfig', false, '1699786344853527');
 fbq('init', '1699786344853527');
 fbq('track', 'PageView');
+}
 </script>
 <!-- End Meta Pixel Code -->
 <script>
 /* OROM: Pixel hodisalari (shaxsiy ma'lumotsiz, faqat umumiy hodisalar) */
 function oromTrack(n,p){try{if(window.fbq)fbq('track',n,p||{});}catch(e){}}
+function oromPlanVal(id){try{var x=PLANS.find(function(q){return q.id===id;});return x?parseInt(x.price.replace(/\D/g,''),10):0;}catch(e){return 0;}}
 </script>
 <link rel="manifest" href="./manifest.json">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1076,7 +1082,7 @@ try{
 /* Tekshiruvlar haqida ma'lumot bergan darslar oxiridagi yozuv (matnni faqat shu yerdan o'zgartiring) */
 const CLINIC_NOTE = "Agar siz tekshiruvlardan o'tmagan bo'lsangiz, klinikaga qabulga kelganingizda ham tekshiruvlardan o'tib ketishingiz mumkin. <strong>Bizda tekshiruvlar mavjud.</strong>";
 let receptionReturn=null;   // "Qabul turlari" sahifasidan "orqaga" qayerga qaytishini eslab turadi (masalan, dars sahifasiga)
-const APP_VERSION = "2026.10.11-a";   // har yangi nusxada o'zgartiriladi: Sozlamalar pastida ko'rinadi (eski nusxa keshdan chiqayotganini bilish uchun)
+const APP_VERSION = "2026.10.11-b";   // har yangi nusxada o'zgartiriladi: Sozlamalar pastida ko'rinadi (eski nusxa keshdan chiqayotganini bilish uchun)
 /* Server bergan Telegram havolasi faqat https://t.me/ (yoki telegram.me) bo'lsa ishlatiladi — boshqa manzilga yo'naltirib yuborishga qarshi */
 function safeTgLink(link){
  const v=String(link||"");
@@ -1501,7 +1507,7 @@ async function startCheckout(provider, plan){
   const url = provider==="click" ? data.clickUrl : data.paymeUrl;
   if(!url) throw new Error("Havola topilmadi");
   await markPayPending(plan);
-  oromTrack('InitiateCheckout',{content_ids:[plan],currency:'UZS'});
+  oromTrack('InitiateCheckout',{content_ids:[plan],content_type:'product',value:oromPlanVal(plan),currency:'UZS'});
   await new Promise(r=>setTimeout(r,400));
   location.href=url; // foydalanuvchi to'lov sahifasiga o'tadi, to'lagach ilovaga qaytadi
  }catch(e){
@@ -2038,7 +2044,7 @@ async function payViaBot(){
   const data=await res.json();
   if(!data.code) throw new Error("kod yo'q");
   await markPayPending(pickedPlan);
-  oromTrack('InitiateCheckout',{content_ids:[pickedPlan],currency:'UZS'});
+  oromTrack('InitiateCheckout',{content_ids:[pickedPlan],content_type:'product',value:oromPlanVal(pickedPlan),currency:'UZS'});
   await new Promise(r=>setTimeout(r,400));
   location.href="https://t.me/"+BOT_USERNAME+"?start="+encodeURIComponent(pickedPlan+"_"+data.code);
  }catch(e){
@@ -2110,7 +2116,7 @@ function showPaidModal(plan,st){
  try{
   const _pp=PLANS.find(x=>x.id===plan), _k='trkPurchase_'+((st&&st.expiresAt)||plan);
   if(!localStorage.getItem(_k)){ localStorage.setItem(_k,'1');
-   oromTrack('Purchase',{value:_pp?parseInt(_pp.price.replace(/\D/g,''),10):0,currency:'UZS',content_ids:[plan]}); }
+   oromTrack('Purchase',{value:_pp?parseInt(_pp.price.replace(/\D/g,''),10):0,currency:'UZS',content_type:'product',content_ids:[plan]}); }
  }catch(e){}
  const old=document.getElementById("paidModal"); if(old) old.remove();
  const name=PAY_PLAN_NAMES[plan]||((st&&st.tier==="premium")?"Premium":"Standard");
@@ -2810,7 +2816,7 @@ function planCardsHtml(){
  return grp("standard","STANDARD","Ilova va video darslar")+grp("premium","PREMIUM","Doktor bilan yopiq darslar va maslahatlar")}
 function openPlanConfirm(id){
  const p=PLANS.find(x=>x.id===id); if(!p) return; pickedPlan=id;
- oromTrack('AddToCart',{content_ids:[id],content_category:p.tier,currency:'UZS'});
+ oromTrack('AddToCart',{content_ids:[id],content_type:'product',content_category:p.tier,value:oromPlanVal(id),currency:'UZS'});
  const old=document.getElementById("planConfirm"); if(old) old.remove();
  const d=document.createElement("div"); d.id="planConfirm"; d.className="plan-confirm";
  d.innerHTML=`<div class="box">
