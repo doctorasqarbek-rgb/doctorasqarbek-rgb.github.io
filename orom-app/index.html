@@ -1082,7 +1082,7 @@ try{
 /* Tekshiruvlar haqida ma'lumot bergan darslar oxiridagi yozuv (matnni faqat shu yerdan o'zgartiring) */
 const CLINIC_NOTE = "Agar siz tekshiruvlardan o'tmagan bo'lsangiz, klinikaga qabulga kelganingizda ham tekshiruvlardan o'tib ketishingiz mumkin. <strong>Bizda tekshiruvlar mavjud.</strong>";
 let receptionReturn=null;   // "Qabul turlari" sahifasidan "orqaga" qayerga qaytishini eslab turadi (masalan, dars sahifasiga)
-const APP_VERSION = "2026.10.11-b";   // har yangi nusxada o'zgartiriladi: Sozlamalar pastida ko'rinadi (eski nusxa keshdan chiqayotganini bilish uchun)
+const APP_VERSION = "2026.10.11-c";   // har yangi nusxada o'zgartiriladi: Sozlamalar pastida ko'rinadi (eski nusxa keshdan chiqayotganini bilish uchun)
 /* Server bergan Telegram havolasi faqat https://t.me/ (yoki telegram.me) bo'lsa ishlatiladi — boshqa manzilga yo'naltirib yuborishga qarshi */
 function safeTgLink(link){
  const v=String(link||"");
@@ -1939,7 +1939,7 @@ async function loadProfile(){
  const hist=(p.payments||[]).length
   ? (p.payments||[]).map(x=>`<div style="display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid var(--line)"><span>${pfDate(x.paidAt)} · ${pfEsc(PLAN_NAMES[x.plan]||x.plan)}</span>${PLAY_MODE?"":'<b>'+Number(x.amount).toLocaleString("ru-RU").replace(/\u00a0/g," ")+" so'm</b>"}</div>`).join("")
   : '<p class="tiny" style="text-align:left;padding:4px 0">Hozircha to\'lovlar yo\'q.</p>';
- body.innerHTML=tarif+tgc+grp+`<div class="disc"><h3>🧾 To'lovlar tarixi</h3>${hist}</div>
+ body.innerHTML=tarif+tgc+grp+`
   <button class="btn btn-ghost btn-block" id="pfSettings" style="margin-top:6px">⚙️ Sozlamalar (til, ma'lumotlarni o'chirish)</button>`;
  const g=id=>document.getElementById(id);
  if(g("pfPremium")) g("pfPremium").onclick=()=>{ renderPremium(); show("premium"); };
