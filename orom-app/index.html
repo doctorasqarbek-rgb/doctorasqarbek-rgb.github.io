@@ -308,6 +308,10 @@ body{
 .goal-divider{height:1px;background:var(--line);margin:22px 0 16px}
 
 /* Maxsus darslar */
+.inst-steps{margin:10px 0 4px;padding-left:0;list-style:none;counter-reset:st}
+.inst-steps li{counter-increment:st;position:relative;padding:8px 0 8px 40px;font-size:15px;line-height:1.45}
+.inst-steps li::before{content:counter(st);position:absolute;left:0;top:7px;width:28px;height:28px;border-radius:50%;background:#FFC43D;color:#20243B;font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:center}
+.inst-x{background:none;border:0;color:inherit;opacity:.75;font-size:20px;padding:6px 8px;cursor:pointer}
 .home-special{display:flex;align-items:center;gap:12px;background:linear-gradient(135deg,#2E3557,#4A6D67);color:#fff;border-radius:18px;padding:15px 16px;margin:16px 0 4px;cursor:pointer;box-shadow:var(--shadow)}
 .home-special .hs-ic{width:42px;height:42px;flex:none;border-radius:12px;background:rgba(255,255,255,.16);display:flex;align-items:center;justify-content:center}
 .home-special .txt{flex:1}
@@ -531,6 +535,7 @@ html.play-mode .rc-play-only{display:block}
     </div>
 
     <div id="homeProBanner"></div>
+    <div id="homeInstall"></div>
 
     <div class="home-special" id="homeSpecialGo">
       <div class="hs-ic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 5v14l11-7z"/></svg></div>
@@ -721,7 +726,7 @@ html.play-mode .rc-play-only{display:block}
 
     <div class="disc" id="receptionCard">
       <h3>🏥 Shifokor qabuli</h3>
-      <p>Jonli qabul, individual onlayn konsultatsiya va 10 kunlik onlayn davolash kursi haqida ma'lumot.</p>
+      <p>Jonli qabul, onlayn qabul va 10 kunlik onlayn davolash kursi haqida ma'lumot.</p>
       <button class="btn btn-primary btn-block" id="receptionBtn">Qabul turlarini ko'rish</button>
     </div>
 
@@ -839,27 +844,32 @@ html.play-mode .rc-play-only{display:block}
 
     <div class="rc-card">
       <h3>🏥 Jonli qabul</h3>
-      <div class="rc-sub">Guruhli 3 soatli terapiya</div>
-      <p>Qabul guruhli va individual tarzda o'tadi. Avval Doktor Ergashev umumiy guruhli 2–3 soatlik dars o'tadi: kasallik rivojlanishining sabablari va tuzalish yo'llarini o'rgatadi.</p>
-      <p>So'ngra bemorlar dori yozdirish uchun yakka-yakka kirganda, 10–15 daqiqa ichida qiziqtirgan barcha savollariga individual javob oladilar.</p>
-      <p>Doktor mavzuni tushuntirish davomida savollaringizning taxminan 90 foiziga javob beradi. Uyalgan yoki muhim savolingizni esa dori yozdirish paytida bemalol berishingiz mumkin.</p>
+      <div class="rc-sub">Guruhli terapiya va individual qabul</div>
+      <p>Bizning qabulimiz odatiy shifokor ko'rigidan tubdan farq qiladi. U o'zida ham chuqurlashtirilgan guruhli terapiyani, ham yakka tartibdagi individual qabulni jamlagan.</p>
+      <p>👥 1-bosqich: Katta psixoterapiya darsi (2-3 soat). Dastlab Doktor Ergashev barcha bemorlar uchun 2-3 soatlik maxsus dars o'tadi. Bu jarayonda sizning holatingiz nima sababdan kelib chiqqani, mexanizmi va undan qutulish sirlari ipidan-ignasigacha tushuntiriladi. Siz o'zingizni qiynab kelgan savollarning 90% iga aynan shu yerning o'zidayoq javob topib bo'lasiz!</p>
+      <p>🧑‍⚕️ 2-bosqich: Individual qabul. Shundan so'ng, har bir bemor shifokor xonasiga yakka tartibda alohida kiradi. Bu shaxsiy vaqt davomida sizning holatingizga moslab aniq dori-darmonlar (farmakoterapiya) yoziladi. Guruhda aytishga noqulay bo'lgan, shaxsiy yoki siz uchun eng muhim bo'lgan maxsus savollaringizni yuzma-yuz berib, yakuniy yechimni olasiz.</p>
+      <p>E'tibor bering: bu narx ichiga 3 soatlik psixoterapevtik trening, shaxsiy tibbiy yondashuv va davolash retsepti to'liq kiradi.</p>
       <span class="rc-price">600 000 so'm</span>
     </div>
 
     <div class="rc-card">
-      <h3>💬 Individual onlayn konsultatsiya <span class="rc-new">YANGI</span></h3>
-      <div class="rc-sub">Doktor bilan yakka tartibda onlayn suhbat</div>
-      <p>Bunda doktor siz bilan onlayn gaplashadi va sizga kerakli tavsiyalarni beradi. Vaziyatga qarab dorilar ham yozib beradi.</p>
+      <h3>💻 Onlayn qabul</h3>
+      <div class="rc-sub">Uydan chiqmasdan, video aloqa orqali</div>
+      <p>Ro'yxatdan o'tganingizdan so'ng, belgilangan vaqtda mutaxassisimizning o'zi siz bilan to'g'ridan-to'g'ri video aloqa orqali bog'lanadi. Uydan chiqishingiz shart emas.</p>
+      <p>⏳ Davomiyligi: 30 daqiqadan 1 soatgacha. Bu vaqt ichida sizni qiynayotgan barcha muammolar diqqat bilan eshitiladi va chuqur tahlil qilinadi.</p>
+      <p>💊 Kompleks yondashuv: qabul davomida sizga nafaqat psixoterapevtik yordam (tushuntirish va mashqlar) beriladi, balki holatingizdan kelib chiqib, asab tizimini tiklovchi dorilar retsepti ham yozib beriladi. Barchasi bitta qabulning ichida.</p>
       <span class="rc-price">600 000 so'm</span>
     </div>
 
     <div class="rc-card">
       <h3>📚 10 kunlik onlayn davolash kursi</h3>
-      <div class="rc-sub">Telegramda, guruhli format</div>
-      <p>Kurs onlayn, guruhli formatda Telegramda o'tadi.</p>
-      <p>10 kun davomida Doktor ishtirokchilarga nevrotik va depressiv kasalliklarning kelib chiqish sabablari, mexanizmlari, xarakter ustida ishlash va tuzalish yo'llarini o'rgatadi. Bundan tashqari dorilar ham tavsiya qilinadi.</p>
-      <p>🔒 Kursda faqat Doktorning o'zi ko'rinadi, qolgan ishtirokchilar faqat ovozli tarzda gaplashishi mumkin. Bu har bir bemorning shaxsini sir saqlash uchun.</p>
-      <p>🎁 Bonus: darslik sizda qoladi, o'chirib yuborilmaydi.</p>
+      <div class="rc-sub">Sog'lom asab tizimi sari 10 kunlik qadam</div>
+      <p>10 kunlik intensiv onlayn kursimizda sizni nimalar kutmoqda? Sog'lom asab tizimi va xotirjam hayot sari tashlanadigan 10 kunlik qadam! Bu shunchaki dars emas, balki sizning holatingizni to'liq o'zgartirishga qaratilgan kompleks davolash dasturidir.</p>
+      <p>💳 Kursning to'liq narxi: 1 million so'm. 10 kunlik jonli psixoterapiya, tahlillar va amaliy mashg'ulotlar barchasi ichida.</p>
+      <p>Bunga qo'shimcha ravishda siz quyidagi mutlaq ustunliklarga ega bo'lasiz:</p>
+      <p>🎥 Dars yozuvlari sizda qoladi: vaqt topa olmay qolishdan xavotirlanmang! Barcha video va audio darslarning yozuvlari (zapislar) guruhga tashlab beriladi. Ularni istalgan vaqtda qayta ko'rib, o'z ustingizda ishlashda davom etishingiz mumkin.</p>
+      <p>👨‍⚕️ Shifokorning shaxsiy nazorati (VIP yondashuv): eng katta yutug'ingiz — kurs ishtirokchilariga doktorning shaxsiy profili beriladi. Darsdan tashqari vaqtlarda ham o'zingizni qiynagan savollarga bevosita mutaxassisning o'zidan doimiy javob va maslahatlar olib borasiz.</p>
+      <p>⚠️ Diqqat: har bir ishtirokchining holati bilan chuqur va individual ishlash talab etilganligi sababli, qabul qilinuvchilar soni qat'iy chegaralangan. O'z sog'ligingiz uchun bugunoq joyingizni band qiling!</p>
       <span class="rc-price">1 000 000 so'm · 10 kun uchun</span>
     </div>
 
@@ -873,6 +883,9 @@ html.play-mode .rc-play-only{display:block}
   </section>
 
   <!-- SOZLAMALAR -->
+  <!-- INSTALL -->
+  <section class="view" id="view-install"></section>
+
   <section class="view" id="view-settings">
     <span class="eyebrow">Sozlamalar</span>
     <div class="h-display">Sozlamalar</div>
@@ -887,6 +900,11 @@ html.play-mode .rc-play-only{display:block}
     <div class="planner-entry" id="profileEntry" style="margin-top:12px;cursor:pointer">
       <div class="pe-ic">👤</div>
       <div class="txt"><b>Mening profilim</b><span>Tarif, muddat, Telegram akkaunt, to'lovlar tarixi</span></div>
+      <div class="go">→</div>
+    </div>
+    <div class="planner-entry" id="installEntry" style="margin-top:12px;cursor:pointer">
+      <div class="pe-ic">📲</div>
+      <div class="txt"><b>Ilovani telefonga o'rnatish</b><span>Android va iPhone uchun video qo'llanma</span></div>
       <div class="go">→</div>
     </div>
 
@@ -1082,7 +1100,7 @@ try{
 /* Tekshiruvlar haqida ma'lumot bergan darslar oxiridagi yozuv (matnni faqat shu yerdan o'zgartiring) */
 const CLINIC_NOTE = "Agar siz tekshiruvlardan o'tmagan bo'lsangiz, klinikaga qabulga kelganingizda ham tekshiruvlardan o'tib ketishingiz mumkin. <strong>Bizda tekshiruvlar mavjud.</strong>";
 let receptionReturn=null;   // "Qabul turlari" sahifasidan "orqaga" qayerga qaytishini eslab turadi (masalan, dars sahifasiga)
-const APP_VERSION = "2026.10.11-c";   // har yangi nusxada o'zgartiriladi: Sozlamalar pastida ko'rinadi (eski nusxa keshdan chiqayotganini bilish uchun)
+const APP_VERSION = "2026.10.14-a";   // har yangi nusxada o'zgartiriladi: Sozlamalar pastida ko'rinadi (eski nusxa keshdan chiqayotganini bilish uchun)
 /* Server bergan Telegram havolasi faqat https://t.me/ (yoki telegram.me) bo'lsa ishlatiladi — boshqa manzilga yo'naltirib yuborishga qarshi */
 function safeTgLink(link){
  const v=String(link||"");
@@ -2345,7 +2363,7 @@ function courseStats(){
 }
 
 /* ---------- Navigatsiya ---------- */
-const views=["home","course","module","lesson","tools","help","settings","premium","tests","test","special","specialplay","paths","path","pathstep","planner","ladder","ladderitem","charex","plan","profile","reception","diploma"];
+const views=["home","course","module","lesson","tools","help","settings","premium","tests","test","special","specialplay","paths","path","pathstep","planner","ladder","ladderitem","charex","plan","profile","reception","diploma","install"];
 let current="home", modStack=null;
 /* ===== TELEFONNING "ORQAGA" TUGMASI =====
    Ilova bitta sahifa bo'lgani uchun, tarix yozilmasa telefonning "orqaga" tugmasi ilovani darhol yopadi.
@@ -2421,7 +2439,7 @@ function show(v){
  activeEl.classList.add("active");
  applyScriptToContainer(activeEl);
  current=v;
- document.getElementById("backBtn").style.display=(v==="module"||v==="lesson"||v==="premium"||v==="test"||v==="special"||v==="specialplay"||v==="path"||v==="pathstep"||v==="planner"||v==="ladder"||v==="ladderitem"||v==="charex"||v==="plan"||v==="profile"||v==="settings"||v==="reception"||v==="diploma")?"block":"none";
+ document.getElementById("backBtn").style.display=(v==="module"||v==="lesson"||v==="premium"||v==="test"||v==="special"||v==="specialplay"||v==="path"||v==="pathstep"||v==="planner"||v==="ladder"||v==="ladderitem"||v==="charex"||v==="plan"||v==="profile"||v==="settings"||v==="reception"||v==="diploma"||v==="install")?"block":"none";
  document.querySelectorAll("#nav button").forEach(b=>b.classList.toggle("active",b.dataset.go===v||(v==="plan"&&b.dataset.go==="tools")||(v==="test"&&b.dataset.go==="tests")||((v==="reception"||v==="diploma")&&b.dataset.go==="help")||((v==="path"||v==="pathstep"||v==="planner"||v==="ladder"||v==="ladderitem"||v==="charex")&&b.dataset.go==="paths")));
  window.scrollTo({top:0,behavior:"instant"});
  syncHistory(v);
@@ -2719,6 +2737,7 @@ document.getElementById("backBtn").onclick=()=>{
  else if(current==="ladder"&&curLadderPath){renderPath(curLadderPath);show("path");}
  else if(current==="path"){renderPaths();show("paths");}
  else if(current==="pathstep"&&curPath){renderPath(curPath);show("path");}
+ else if(current==="install"){show(window.__installFrom==="settings"?"settings":"home");}
  else if(current==="settings"){show("home");}
  else if(current==="plan"){show("tools");}
  else if(current==="profile"){show("settings");}
@@ -2847,6 +2866,57 @@ let pickedPlan="monthly_basic";
 const BOT_USERNAME="Doktor_Ergashev_bot";
 const PAYME_PAY=true;    // Payme sandbox sinovi o'tdi — tugma yoqildi
 const CLICK_PAY=true;    // Click xizmati faollashtirildi — tugma yoqildi
+
+/* ---------- Ilovani telefonga o'rnatish (Play Market / App Store'siz) ---------- */
+const INSTALL_VIDEO_ANDROID="https://t.me/doktor_ergashev_psixoterapevt/820";
+const INSTALL_VIDEO_IPHONE="https://t.me/doktor_ergashev_psixoterapevt/821";
+let deferredInstallPrompt=null;
+window.addEventListener("beforeinstallprompt",e=>{ e.preventDefault(); deferredInstallPrompt=e; try{ if(current==="install") renderInstall(); }catch(_){} });
+window.addEventListener("appinstalled",()=>{ deferredInstallPrompt=null; try{ renderHomeInstall(); }catch(_){} });
+function isStandaloneApp(){ try{ return (window.matchMedia&&window.matchMedia("(display-mode: standalone)").matches)||navigator.standalone===true; }catch(e){ return false; } }
+function isIOSDevice(){ const ua=navigator.userAgent||""; return /iPad|iPhone|iPod/.test(ua)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1); }
+function openInstall(from){ window.__installFrom=from||"home"; renderInstall(); show("install"); }
+function renderHomeInstall(){
+ const el=document.getElementById("homeInstall"); if(!el) return;
+ let hidden=false; try{ hidden=localStorage.getItem("installHide")==="1"; }catch(e){}
+ if(PLAY_MODE||isStandaloneApp()||hidden){ el.innerHTML=""; return; }
+ el.innerHTML=`<div class="home-special" id="homeInstallGo" style="margin-top:12px">
+  <div class="hs-ic">📲</div>
+  <div class="txt"><b>Ilovani telefonga o'rnating</b><span>Play Market va App Store kerak emas · video qo'llanma</span></div>
+  <button class="inst-x" id="homeInstallX" aria-label="Yopish">✕</button></div>`;
+ document.getElementById("homeInstallGo").onclick=()=>openInstall("home");
+ document.getElementById("homeInstallX").onclick=(e)=>{ e.stopPropagation(); try{ localStorage.setItem("installHide","1"); }catch(_){} el.innerHTML=""; };
+}
+function renderInstall(){
+ const el=document.getElementById("view-install"); if(!el) return;
+ const android=`<div class="disc"><h3>🤖 Android (Chrome)</h3>
+  <ol class="inst-steps">
+   <li>Chrome brauzerida app.oromlife.uz manzilini oching (Instagram yoki Telegram ichidagi havolada emas).</li>
+   <li>O'ng yuqoridagi uch nuqta tugmasini bosing.</li>
+   <li>«Ilovani o'rnatish» yoki «Bosh ekranga qo'shish» ni tanlang.</li>
+   <li>«O'rnatish» tugmasini bosing — Orom ikonkasi bosh ekranda paydo bo'ladi.</li>
+  </ol>
+  ${deferredInstallPrompt?`<button class="btn btn-primary btn-block" id="instNow" style="margin-top:8px">Hoziroq o'rnatish</button>`:""}
+  <a class="btn btn-soft btn-block" style="margin-top:8px;text-align:center;text-decoration:none" href="${INSTALL_VIDEO_ANDROID}" target="_blank" rel="noopener">▶️ Android uchun video qo'llanma</a></div>`;
+ const iphone=`<div class="disc"><h3>🍎 iPhone (Safari)</h3>
+  <ol class="inst-steps">
+   <li>Safari brauzerida app.oromlife.uz manzilini oching (Telegram yoki Instagram ichidagi brauzerda o'rnatib bo'lmaydi).</li>
+   <li>Pastdagi «Ulashish» tugmasini bosing (strelkali kvadrat).</li>
+   <li>Ro'yxatni yuqoriga surib, «Bosh ekranga qo'shish» ni tanlang.</li>
+   <li>O'ng yuqoridagi «Qo'shish» tugmasini bosing.</li>
+  </ol>
+  <a class="btn btn-soft btn-block" style="margin-top:8px;text-align:center;text-decoration:none" href="${INSTALL_VIDEO_IPHONE}" target="_blank" rel="noopener">▶️ iPhone uchun video qo'llanma</a></div>`;
+ el.innerHTML=`<span class="eyebrow">Qo'llanma</span>
+  <div class="h-display">Ilovani telefonga o'rnatish</div>
+  <p class="lead">Play Market yoki App Store kerak emas. Orom ilovasini telefoningiz bosh ekraniga bir daqiqada o'rnatishingiz mumkin.</p>
+  ${isStandaloneApp()?`<div class="disc"><p>✅ Ilova telefoningizga o'rnatilgan.</p></div>`:""}
+  ${isIOSDevice()?iphone+android:android+iphone}
+  <p class="tiny">Ikonka bosh ekranda paydo bo'ladi. Keyingi safar uni bosish kifoya.</p>`;
+ const b=document.getElementById("instNow");
+ if(b) b.onclick=async()=>{ try{ deferredInstallPrompt.prompt(); await deferredInstallPrompt.userChoice; }catch(e){} deferredInstallPrompt=null; renderInstall(); };
+ if(scriptMode==="ru") try{ruRefreshView();}catch(e){}
+}
+{const ie=document.getElementById("installEntry"); if(ie){ if(PLAY_MODE) ie.style.display="none"; else ie.onclick=()=>openInstall("settings"); }}
 function renderHomeProBanner(){
  const el=document.getElementById("homeProBanner");
  const vs=document.getElementById("homeVideoSub"); if(vs) vs.textContent=isPro?"To'liq video kurs — yopiq kanalda":"Bepul namunalar mavjud";
@@ -4362,7 +4432,7 @@ function toast(t){const el=document.getElementById("toast");el.textContent=t;el.
 document.getElementById("homeTestGo").onclick=()=>{renderTests();show("tests");};
 document.getElementById("homeSpecialGo").onclick=()=>{window.__specialFrom="home";renderSpecial();show("special");};
 document.getElementById("courseSpecialGo").onclick=()=>{window.__specialFrom="course";renderSpecial();show("special");};
-function renderAll(){renderHomePushPrompt();refreshProgress();renderHomeProBanner();renderHomeMods();renderCourse();renderHomeReminder();renderHomeLadderReminder();renderHomeGoalsReminder();renderHomeCharexReminder();renderHomePlanReminder();renderPlanEntry();}
+function renderAll(){renderHomeInstall();renderHomePushPrompt();refreshProgress();renderHomeProBanner();renderHomeMods();renderCourse();renderHomeReminder();renderHomeLadderReminder();renderHomeGoalsReminder();renderHomeCharexReminder();renderHomePlanReminder();renderPlanEntry();}
 (async function(){
  reindex();
  registerDeviceIfNeeded();       // fon rejimida, kutmasdan — internet yo'q bo'lsa ham ilova to'xtamaydi
