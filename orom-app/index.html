@@ -1100,7 +1100,7 @@ try{
 /* Tekshiruvlar haqida ma'lumot bergan darslar oxiridagi yozuv (matnni faqat shu yerdan o'zgartiring) */
 const CLINIC_NOTE = "Agar siz tekshiruvlardan o'tmagan bo'lsangiz, klinikaga qabulga kelganingizda ham tekshiruvlardan o'tib ketishingiz mumkin. <strong>Bizda tekshiruvlar mavjud.</strong>";
 let receptionReturn=null;   // "Qabul turlari" sahifasidan "orqaga" qayerga qaytishini eslab turadi (masalan, dars sahifasiga)
-const APP_VERSION = "2026.10.14-a";   // har yangi nusxada o'zgartiriladi: Sozlamalar pastida ko'rinadi (eski nusxa keshdan chiqayotganini bilish uchun)
+const APP_VERSION = "2026.10.16-a";   // har yangi nusxada o'zgartiriladi: Sozlamalar pastida ko'rinadi (eski nusxa keshdan chiqayotganini bilish uchun)
 /* Server bergan Telegram havolasi faqat https://t.me/ (yoki telegram.me) bo'lsa ishlatiladi — boshqa manzilga yo'naltirib yuborishga qarshi */
 function safeTgLink(link){
  const v=String(link||"");
@@ -2799,7 +2799,7 @@ function modCard(m,i){
  d.innerHTML=`<div class="idx${lk?' idx-lock':''}">${idxInner}</div>
   <div class="meta"><h3>${m.title}</h3>${meta}</div>
   <div class="chev">›</div>`;
- d.onclick=()=>{ if(lk){renderPremium();show("premium");} else {renderModule(m);show("module");} };
+ d.onclick=()=>{ renderModule(m);show("module"); };   // bo'lim ichiga hamma kira oladi (mavzular nomi ko'rinadi); yopiq darsga bosilganda obuna so'raladi
  return d;
 }
 function renderCourse(){
@@ -4003,7 +4003,7 @@ function renderMBTIResult(t,code,detail){
   <div class="test-note" style="margin-top:14px">Bu test — o'z-o'zini kashf etish va qiziqarli suhbat uchún vosita. Ilmiy jihatdan Katta beshlik modeli ancha barqaror hisoblanadi — buni ham ko'rib chiqing.</div>
   <button class="btn btn-ghost btn-block" id="resAgain" style="margin-top:6px">Qaytadan ishlash</button>
   <button class="btn btn-ghost btn-block" id="resBack">Testlarga qaytish</button>`;
- if(mod)document.getElementById("resMod").onclick=()=>{ if(locked(mod)){renderPremium();show("premium");} else {renderModule(mod);show("module");} };
+ if(mod)document.getElementById("resMod").onclick=()=>{ renderModule(mod);show("module"); };
  document.getElementById("resAgain").onclick=()=>startTest(t);
  document.getElementById("resBack").onclick=()=>{renderTests();show("tests");};
  window.scrollTo({top:0,behavior:"instant"});
@@ -4026,7 +4026,7 @@ function renderTestResult(t,band){
   <div class="test-note" style="margin-top:14px">${TEST_DISCLAIMER}</div>
   <button class="btn btn-ghost btn-block" id="resAgain" style="margin-top:6px">Qaytadan ishlash</button>
   <button class="btn btn-ghost btn-block" id="resBack">Testlarga qaytish</button>`;
- if(mod)document.getElementById("resMod").onclick=()=>{ if(locked(mod)){renderPremium();show("premium");} else {renderModule(mod);show("module");} };
+ if(mod)document.getElementById("resMod").onclick=()=>{ renderModule(mod);show("module"); };
  const rh=document.getElementById("resHelp"); if(rh)rh.onclick=()=>show("help");
  document.getElementById("resAgain").onclick=()=>startTest(t);
  document.getElementById("resBack").onclick=()=>{renderTests();show("tests");};
