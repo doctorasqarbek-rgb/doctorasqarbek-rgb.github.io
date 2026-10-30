@@ -16,7 +16,8 @@
       "package_name": "uz.orom.app",
       "sha256_cert_fingerprints": [
         "49:10:18:D7:A5:04:C9:4F:B3:9A:D1:52:BD:07:8A:87:AF:1E:4E:8C:B3:CC:39:A8:E1:8E:0D:9B:AE:06:D4:AE",
-        "FA:DA:97:93:BC:0D:4F:58:8E:DB:69:63:E4:82:0E:BD:B0:11:ED:93:E6:25:11:AE:C4:E1:23:36:C4:3B:8A:AF"
+        "FA:DA:97:93:BC:0D:4F:58:8E:DB:69:63:E4:82:0E:BD:B0:11:ED:93:E6:25:11:AE:C4:E1:23:36:C4:3B:8A:AF",
+        "40:A3:45:79:E4:C5:4D:95:8A:EA:A3:4D:4E:8E:0B:97:23:FC:FE:66:13:46:DC:FC:BD:81:19:10:28:EB:45:D6"
       ]
     }
   }
