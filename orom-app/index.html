@@ -1052,6 +1052,8 @@ function reindex(){ allLessons = COURSE.flatMap(m=>m.lessons.map(l=>l.id)); }
 /* ---------- Saqlash (qurilmada) ---------- */
 /* Saqlash: bu ilova mustaqil sahifa sifatida (GitHub Pages / telefonda) ishlaydi,
    shuning uchun localStorage — haqiqiy, doimiy saqlash qatlami. */
+// Serverdagi progress zaxirasiga kiradigan kalitlar (pastdagi «PROGRESS ZAXIRASI» bo'limi; serverda lib/cloudsync.js KEY_RE bilan bir xil)
+const CLOUD_KEY_RE=/^(done|last|testres_[A-Za-z0-9_-]{1,40}|charexTotal:[A-Za-z0-9_-]{1,40}:[A-Za-z0-9_-]{1,40}|charexLastDate:[A-Za-z0-9_-]{1,40}:[A-Za-z0-9_-]{1,40}|plannerDays:[A-Za-z0-9_-]{1,40}|ladderStudied:[A-Za-z0-9_-]{1,40}|plan:[A-Za-z0-9_-]{1,40}:\d{4}-\d{2}-\d{2}|goals:[A-Za-z0-9_-]{1,40}:(daily|weekly|monthly|yearly):[0-9W-]{4,10})$/;
 const Store={mem:{},
  async get(k){
   try{const v=localStorage.getItem("orom:"+k); return v===null?null:v;}
@@ -1060,6 +1062,7 @@ const Store={mem:{},
  async set(k,v){
   this.mem[k]=v;
   try{localStorage.setItem("orom:"+k,v);}catch(e){}
+  if(CLOUD_KEY_RE.test(k)) cloudMarkChanged(k);   // progress — serverdagi zaxiraga ham (Telegram ulangan bo'lsa)
  }};
 
 /* ================= BACKEND INTEGRATSIYASI (Payme/Click) =================
@@ -1651,6 +1654,7 @@ async function refreshAfterTgChange(){
  await refreshProFromServer();
  try{ renderPremium(); renderHomeMods(); renderCourse(); refreshAll(); }catch(e){}
  renderTgCard();
+ if(await cloudSync()) toast("Progressingiz tiklandi ✅");   // boshqa telefondagi progress shu yerga keladi
 }
 /* true — kutish tugadi (ulandi/muddati o'tdi/kutilmayapti); false — hali kutilyapti */
 async function checkTgLogin(){
@@ -4423,6 +4427,88 @@ async function syncReminderProgress(){
  }catch(e){ /* tarmoq yo'q — keyingi safar */ }
 }
 
+/* ===== PROGRESS ZAXIRASI (serverda, Telegram akkauntga bog'langan) =====
+   Telefon almashtirilsa yoki ilova qayta o'rnatilsa: «Telegram orqali kirish» → progress o'zi qaytadi.
+   Faqat progress: o'tilgan darslar, test natijalari, mashq hisoblari, reja va maqsadlar.
+   Shaxsiy yozuvlar (kundalik, minnatdorlik, fikrlar, xavotirlar zinapoyasi matni va h.k.) serverga YUBORILMAYDI — faqat telefonda.
+   Kalitlar ro'yxati va birlashtirish qoidalari serverdagi orom-backend/lib/cloudsync.js bilan BIR XIL bo'lishi shart.
+   Har kalitning o'zgargan vaqti "syncMeta" da; to'qnashuvda eng yangisi, hisoblagichlarda kattasi qoladi.
+   Internet yo'q bo'lsa — ilova odatdagidek ishlaydi, keyingi ochilishda yoki internet qaytganda yuboriladi. */
+const CLOUD_PLAN_DAYS=30;          // kunlik rejaning faqat oxirgi 30 kuni
+var cloudTimer=null, cloudBusy=false, cloudAgain=false;   // var: Store.set ishga tushishda erta chaqirilsa ham xato bermasin
+function cloudMeta(){ try{ return JSON.parse(localStorage.getItem("orom:syncMeta")||"{}")||{}; }catch(e){ return {}; } }
+function cloudSaveMeta(m){ try{ localStorage.setItem("orom:syncMeta",JSON.stringify(m)); }catch(e){} }
+function cloudMarkChanged(k){
+ const m=cloudMeta(); m[k]=Date.now(); cloudSaveMeta(m);
+ clearTimeout(cloudTimer); cloudTimer=setTimeout(()=>cloudSync(),5000);   // bir necha o'zgarishni bitta so'rovga yig'amiz
+}
+function cloudPick(k,a,b,union){   // serverdagi mergeEntry bilan bir xil
+ if(!a) return b; if(!b) return a;
+ if(union&&k==="done"){
+  try{ const x=JSON.parse(a.v), y=JSON.parse(b.v);
+   if(Array.isArray(x)&&Array.isArray(y)){ const u=JSON.stringify([...new Set([...x,...y])]); return u===a.v?a:{v:u,t:Math.max(a.t,b.t)}; }
+  }catch(e){}
+ }
+ if(k.startsWith("charexTotal:")||k.startsWith("plannerDays:")){
+  const na=parseInt(a.v,10)||0, nb=parseInt(b.v,10)||0; if(na!==nb) return na>nb?a:b;
+ }else if(k.startsWith("charexLastDate:")||k.startsWith("ladderStudied:")){
+  if(a.v!==b.v) return a.v>b.v?a:b;
+ }
+ return b.t>a.t?b:a;
+}
+function cloudLocalEntries(){
+ const m=cloudMeta(), out={};
+ const c=new Date(Date.now()-CLOUD_PLAN_DAYS*864e5);
+ const cutoff=c.getFullYear()+"-"+String(c.getMonth()+1).padStart(2,"0")+"-"+String(c.getDate()).padStart(2,"0");
+ try{
+  for(let i=0;i<localStorage.length;i++){
+   const full=localStorage.key(i); if(!full||!full.startsWith("orom:")) continue;
+   const k=full.slice(5); if(!CLOUD_KEY_RE.test(k)) continue;
+   if(k.startsWith("plan:")&&k.slice(-10)<cutoff) continue;
+   out[k]={v:localStorage.getItem(full),t:m[k]||1};   // yangilanishdan oldingi eski yozuvlar — t=1 (eng eski)
+  }
+ }catch(e){}
+ return out;
+}
+async function cloudApplyToUi(){
+ try{ const d=await Store.get("done"); done=new Set(d?JSON.parse(d):[]); }catch(e){}
+ lastLesson=await Store.get("last");
+ try{ renderAll(); if(current==="tests") renderTests(); }catch(e){}
+}
+/* Yuboradi va serverdagi birlashtirilgan holatni qabul qiladi. true — telefondagi progress yangilandi. */
+async function cloudSync(opts){
+ if(!backendReady()) return false;
+ if((await Store.get("tgLinked"))!=="1"){ storeDel("cloudLinked"); return false; }
+ if(cloudBusy){ cloudAgain=true; return false; }
+ cloudBusy=true; clearTimeout(cloudTimer); cloudTimer=null;
+ let changed=false;
+ try{
+  const first=(await Store.get("cloudLinked"))!=="1";   // shu telefonning akkauntga birinchi ulanishi — darslar ro'yxati birlashtiriladi
+  const deviceId=await getDeviceId();
+  const body=JSON.stringify({deviceId,entries:cloudLocalEntries(),first});
+  const r=await fetch(BACKEND_URL+"/api/sync",{method:"POST",headers:{"Content-Type":"application/json"},body,keepalive:!!(opts&&opts.keepalive)&&body.length<60000});
+  if(!r.ok) return false;
+  const j=await r.json();
+  if(!j.linked||!j.entries||typeof j.entries!=="object") return false;
+  const m=cloudMeta();
+  for(const [k,e] of Object.entries(j.entries)){
+   if(!CLOUD_KEY_RE.test(k)||!e||typeof e.v!=="string") continue;
+   const cur=localStorage.getItem("orom:"+k);
+   const win=cloudPick(k,cur===null?null:{v:cur,t:m[k]||1},{v:e.v,t:Number(e.t)||1},first);
+   if(win.v!==cur){ localStorage.setItem("orom:"+k,win.v); Store.mem[k]=win.v; m[k]=win.t; changed=true; }
+  }
+  if(changed){ cloudSaveMeta(m); await cloudApplyToUi(); }
+  await Store.set("cloudLinked","1");
+ }catch(e){ /* internet yo'q — keyingi safar */ }
+ finally{
+  cloudBusy=false;
+  if(cloudAgain){ cloudAgain=false; cloudTimer=setTimeout(()=>cloudSync(),2000); }
+ }
+ return changed;
+}
+window.addEventListener("online",()=>cloudSync());
+document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="hidden"&&cloudTimer) cloudSync({keepalive:true}); });
+
 /* ---------- Toast ---------- */
 let toTimer=null;
 function toast(t){const el=document.getElementById("toast");el.textContent=t;el.classList.add("show");clearTimeout(toTimer);toTimer=setTimeout(()=>el.classList.remove("show"),2200);}
@@ -4452,6 +4538,7 @@ function renderAll(){renderHomeInstall();renderHomePushPrompt();refreshProgress(
  const deepLinked=handleDeepLink(location.href);   // bildirishnomadan kelgan bo'lsa, kerakli bo'limni ochamiz
  if(deepLinked){ try{ history.replaceState(history.state,"",location.pathname+location.hash); }catch(e){} }
  syncReminderProgress();   // xarakter mashqlari progressini eslatmalar uchun yuboramiz
+ cloudSync();              // progress zaxirasi (Telegram ulangan bo'lsa): yuboramiz va boshqa telefondagisini olamiz
  if(!deepLinked) setTimeout(maybeShowPushGate,700);   // ilovaga kirishi bilan bildirishnomani yoqishni so'raymiz
  if(current==="home") applyScriptToContainer(document.getElementById("view-home"));
  await loadTests();        // testlarni yuklaymiz
