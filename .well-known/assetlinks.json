@@ -15,7 +15,8 @@
       "namespace": "android_app",
       "package_name": "uz.orom.app",
       "sha256_cert_fingerprints": [
-        "49:10:18:D7:A5:04:C9:4F:B3:9A:D1:52:BD:07:8A:87:AF:1E:4E:8C:B3:CC:39:A8:E1:8E:0D:9B:AE:06:D4:AE"
+        "49:10:18:D7:A5:04:C9:4F:B3:9A:D1:52:BD:07:8A:87:AF:1E:4E:8C:B3:CC:39:A8:E1:8E:0D:9B:AE:06:D4:AE",
+        "FA:DA:97:93:BC:0D:4F:58:8E:DB:69:63:E4:82:0E:BD:B0:11:ED:93:E6:25:11:AE:C4:E1:23:36:C4:3B:8A:AF"
       ]
     }
   }
