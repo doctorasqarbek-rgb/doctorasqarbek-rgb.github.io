@@ -34,7 +34,7 @@ GitHub Pages. Domen: app.oromlife.uz (CNAME). Ilova: `orom-app/index.html` — B
 
 - Standard: ilova + kurs va mashq videolari kanallari. Premium: Standard + yopiq guruh (doktor bilan birga yopiq darslar va maslahatlar).
 - Yopiq guruhga FAQAT Premium bilan kiriladi. Eski alohida 100 000 so'mlik guruh to'lovi yo'q (Premium ichiga kirgan).
-- Standard → Premium o'tish: Premium narxining TO'LIQ farqi (179 000 − 119 000 = 60 000); Premium muddati to'lov sanasidan boshlanadi.
+- Standard → Premium o'tish: Premium narxi − Standardning QOLGAN kunlari qiymati (masalan 1 oylik Standarddan 15 kun qolgan: 179 000 − 119 000 × 15/30 = 119 500); Premium muddati to'lov sanasidan boshlanadi. Hisob faqat backend `getUpgradeQuote` da.
 
 ## Tizim tuzilishi
 - **Ilova** (PWA/TWA): `doctorasqarbek-rgb.github.io` repo, `orom-app/index.html`; manzil app.oromlife.uz/orom-app/. GitHub Pages.
