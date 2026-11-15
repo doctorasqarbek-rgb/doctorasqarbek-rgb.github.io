@@ -1021,6 +1021,7 @@ html.play-mode .rc-play-only{display:block}
     <button data-go="course"><span class="ic"><svg viewBox="0 0 24 24"><path d="M4 5h16v14H4z"/><path d="M4 9h16"/><path d="M9 5v14"/></svg></span>Kurs</button>
     <button data-go="paths"><span class="ic"><svg viewBox="0 0 24 24"><path d="M6 20v-5a4 4 0 014-4h4a4 4 0 004-4V4"/><circle cx="6" cy="20" r="1.6"/><circle cx="18" cy="4" r="1.6"/></svg></span>Tiklanish</button>
     <button data-go="tests"><span class="ic"><svg viewBox="0 0 24 24"><path d="M9 11l3 3 5-6"/><rect x="4" y="4" width="16" height="16" rx="3"/></svg></span>Testlar</button>
+    <button data-go="cases"><span class="ic"><svg viewBox="0 0 24 24"><path d="M9 3h6l1 4H8z"/><rect x="4" y="7" width="16" height="14" rx="3"/><path d="M9 12h6M9 16h4"/></svg></span>Keyslar</button>
     <button data-go="tools"><span class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2 2M16.4 16.4l2 2M18.4 5.6l-2 2M7.6 16.4l-2 2"/></svg></span>Mashq</button>
     <button data-go="help"><span class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 015 0c0 1.7-2.5 2-2.5 4"/><path d="M12 17h.01"/></svg></span>Biz haqimizda</button>
   </nav>
@@ -1125,7 +1126,7 @@ try{
 /* Tekshiruvlar haqida ma'lumot bergan darslar oxiridagi yozuv (matnni faqat shu yerdan o'zgartiring) */
 const CLINIC_NOTE = "Agar siz tekshiruvlardan o'tmagan bo'lsangiz, klinikaga qabulga kelganingizda ham tekshiruvlardan o'tib ketishingiz mumkin. <strong>Bizda tekshiruvlar mavjud.</strong>";
 let receptionReturn=null;   // "Qabul turlari" sahifasidan "orqaga" qayerga qaytishini eslab turadi (masalan, dars sahifasiga)
-const APP_VERSION = "2026.11.15-a";   // har yangi nusxada o'zgartiriladi: Sozlamalar pastida ko'rinadi (eski nusxa keshdan chiqayotganini bilish uchun)
+const APP_VERSION = "2026.11.15-b";   // har yangi nusxada o'zgartiriladi: Sozlamalar pastida ko'rinadi (eski nusxa keshdan chiqayotganini bilish uchun)
 /* Server bergan Telegram havolasi faqat https://t.me/ (yoki telegram.me) bo'lsa ishlatiladi — boshqa manzilga yo'naltirib yuborishga qarshi */
 function safeTgLink(link){
  const v=String(link||"");
@@ -2465,12 +2466,12 @@ function show(v){
  activeEl.classList.add("active");
  applyScriptToContainer(activeEl);
  current=v;
- document.getElementById("backBtn").style.display=(v==="module"||v==="lesson"||v==="premium"||v==="test"||v==="cases"||v==="case"||v==="special"||v==="specialplay"||v==="path"||v==="pathstep"||v==="planner"||v==="ladder"||v==="ladderitem"||v==="charex"||v==="plan"||v==="profile"||v==="settings"||v==="reception"||v==="diploma"||v==="install")?"block":"none";
- document.querySelectorAll("#nav button").forEach(b=>b.classList.toggle("active",b.dataset.go===v||(v==="plan"&&b.dataset.go==="tools")||(v==="test"&&b.dataset.go==="tests")||((v==="reception"||v==="diploma")&&b.dataset.go==="help")||((v==="path"||v==="pathstep"||v==="planner"||v==="ladder"||v==="ladderitem"||v==="charex")&&b.dataset.go==="paths")));
+ document.getElementById("backBtn").style.display=(v==="module"||v==="lesson"||v==="premium"||v==="test"||v==="case"||v==="special"||v==="specialplay"||v==="path"||v==="pathstep"||v==="planner"||v==="ladder"||v==="ladderitem"||v==="charex"||v==="plan"||v==="profile"||v==="settings"||v==="reception"||v==="diploma"||v==="install")?"block":"none";
+ document.querySelectorAll("#nav button").forEach(b=>b.classList.toggle("active",b.dataset.go===v||(v==="plan"&&b.dataset.go==="tools")||(v==="test"&&b.dataset.go==="tests")||(v==="case"&&b.dataset.go==="cases")||((v==="reception"||v==="diploma")&&b.dataset.go==="help")||((v==="path"||v==="pathstep"||v==="planner"||v==="ladder"||v==="ladderitem"||v==="charex")&&b.dataset.go==="paths")));
  window.scrollTo({top:0,behavior:"instant"});
  syncHistory(v);
 }
-document.querySelectorAll("#nav button").forEach(b=>b.onclick=()=>{const g=b.dataset.go;if(g==="course")renderCourse();if(g==="tests")renderTests();if(g==="paths")renderPaths();if(g==="help")renderHelpDynamic();if(g==="tools"){applyToolLocks();setupToolVideoButtons();}show(g);});
+document.querySelectorAll("#nav button").forEach(b=>b.onclick=()=>{const g=b.dataset.go;if(g==="course")renderCourse();if(g==="tests")renderTests();if(g==="cases"){openCases();return;}if(g==="paths")renderPaths();if(g==="help")renderHelpDynamic();if(g==="tools"){applyToolLocks();setupToolVideoButtons();}show(g);});
 
 // Mashqlar bo'limidagi har bir kartaning video-qollanma joyini boshqaradi.
 // Video havolasi hali qoyilmagan bolsa (data-video-url bosh), hech narsa
@@ -2777,7 +2778,7 @@ document.getElementById("backBtn").onclick=()=>{
 /* Telefonning "orqaga" tugmasi: asosiy bo'limlar (Kurs, Tiklanish...) -> Bosh sahifa, ichki ko'rinishlar -> ilovaning "‹" tugmasi */
 function systemBack(){
  if(current==="home") return;
- if(["course","paths","tests","tools","help"].includes(current)){ show("home"); return; }
+ if(["course","paths","tests","cases","tools","help"].includes(current)){ show("home"); return; }
  document.getElementById("backBtn").onclick();
 }
 window.addEventListener("popstate",(ev)=>{
