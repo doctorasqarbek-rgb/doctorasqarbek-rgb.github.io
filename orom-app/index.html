@@ -148,6 +148,12 @@ body{
 .mod .chev{color:var(--muted);font-size:20px;flex:none}
 .mod-locked{background:linear-gradient(180deg,var(--surface),#FBFAFE)}
 .idx-lock{background:var(--primary-soft);color:var(--primary)}
+.case-q{background:var(--primary-soft);border-radius:16px;padding:14px 16px;margin:16px 0;font-weight:500}
+.case-q b{display:block;font-size:12px;letter-spacing:.6px;text-transform:uppercase;color:var(--primary);margin-bottom:6px}
+.case-sec{font-family:Fraunces,serif;font-size:20px;font-weight:600;margin:20px 0 8px}
+.case-take{background:var(--sage-soft);border-radius:16px;padding:14px 16px 14px 34px;margin:14px 0}
+.case-take li{margin:6px 0}
+.new-badge{display:inline-block;background:var(--apricot);color:#fff;font-size:10px;font-weight:600;letter-spacing:.5px;padding:2px 7px;border-radius:6px;margin-right:4px}
 .pro-badge{display:inline-block;background:linear-gradient(135deg,var(--primary),var(--sage));color:#fff;font-size:10px;font-weight:600;letter-spacing:.5px;padding:2px 7px;border-radius:6px;margin-right:2px}
 
 /* Premium */
@@ -546,6 +552,12 @@ html.play-mode .rc-play-only{display:block}
     <div class="home-test" id="homeTestGo">
       <div class="ht-ic"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3 5-6"/><rect x="4" y="4" width="16" height="16" rx="3"/></svg></div>
       <div class="txt"><b>Bugun o'zingizni tekshiring</b><span>Qisqa ta'limiy testlar</span></div>
+      <div class="go" style="font-size:20px;color:var(--muted)">→</div>
+    </div>
+
+    <div class="home-test" id="homeCasesGo">
+      <div class="ht-ic"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6l1 4H8z"/><rect x="4" y="7" width="16" height="14" rx="3"/><path d="M9 12h6M9 16h4"/></svg></div>
+      <div class="txt"><b>Psixologik keyslar</b><span id="homeCasesSub">Vaziyatni tahlil qiling — har hafta yangi keys</span></div>
       <div class="go" style="font-size:20px;color:var(--muted)">→</div>
     </div>
 
@@ -994,6 +1006,16 @@ html.play-mode .rc-play-only{display:block}
   <!-- TEST RUNNER / RESULT -->
   <section class="view" id="view-test"></section>
 
+  <!-- PSIXOLOGIK KEYSLAR -->
+  <section class="view" id="view-cases">
+    <span class="eyebrow">Fikrlab ko'ring</span>
+    <div class="h-display">Keyslar</div>
+    <p class="lead">Hayotiy vaziyatni o'qing, o'zingiz o'ylab ko'ring, so'ng doktorning tahlilini oching. Har hafta yangi keyslar qo'shiladi.</p>
+    <div id="casesList" style="margin-top:18px"></div>
+    <p class="tiny">Keyslar umumlashtirilgan va ta'limiy maqsadda yozilgan: ular aniq bir insonga tegishli emas, ism va tafsilotlar o'ylab topilgan. Keyslar tashxis va davolash o'rnini bosmaydi.</p>
+  </section>
+  <section class="view" id="view-case"></section>
+
   <nav class="nav" id="nav">
     <button data-go="home" class="active"><span class="ic"><svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg></span>Bosh</button>
     <button data-go="course"><span class="ic"><svg viewBox="0 0 24 24"><path d="M4 5h16v14H4z"/><path d="M4 9h16"/><path d="M9 5v14"/></svg></span>Kurs</button>
@@ -1103,7 +1125,7 @@ try{
 /* Tekshiruvlar haqida ma'lumot bergan darslar oxiridagi yozuv (matnni faqat shu yerdan o'zgartiring) */
 const CLINIC_NOTE = "Agar siz tekshiruvlardan o'tmagan bo'lsangiz, klinikaga qabulga kelganingizda ham tekshiruvlardan o'tib ketishingiz mumkin. <strong>Bizda tekshiruvlar mavjud.</strong>";
 let receptionReturn=null;   // "Qabul turlari" sahifasidan "orqaga" qayerga qaytishini eslab turadi (masalan, dars sahifasiga)
-const APP_VERSION = "2026.11.01-a";   // har yangi nusxada o'zgartiriladi: Sozlamalar pastida ko'rinadi (eski nusxa keshdan chiqayotganini bilish uchun)
+const APP_VERSION = "2026.11.15-a";   // har yangi nusxada o'zgartiriladi: Sozlamalar pastida ko'rinadi (eski nusxa keshdan chiqayotganini bilish uchun)
 /* Server bergan Telegram havolasi faqat https://t.me/ (yoki telegram.me) bo'lsa ishlatiladi — boshqa manzilga yo'naltirib yuborishga qarshi */
 function safeTgLink(link){
  const v=String(link||"");
@@ -2367,7 +2389,7 @@ function courseStats(){
 }
 
 /* ---------- Navigatsiya ---------- */
-const views=["home","course","module","lesson","tools","help","settings","premium","tests","test","special","specialplay","paths","path","pathstep","planner","ladder","ladderitem","charex","plan","profile","reception","diploma","install"];
+const views=["home","course","module","lesson","tools","help","settings","premium","tests","test","cases","case","special","specialplay","paths","path","pathstep","planner","ladder","ladderitem","charex","plan","profile","reception","diploma","install"];
 let current="home", modStack=null;
 /* ===== TELEFONNING "ORQAGA" TUGMASI =====
    Ilova bitta sahifa bo'lgani uchun, tarix yozilmasa telefonning "orqaga" tugmasi ilovani darhol yopadi.
@@ -2443,7 +2465,7 @@ function show(v){
  activeEl.classList.add("active");
  applyScriptToContainer(activeEl);
  current=v;
- document.getElementById("backBtn").style.display=(v==="module"||v==="lesson"||v==="premium"||v==="test"||v==="special"||v==="specialplay"||v==="path"||v==="pathstep"||v==="planner"||v==="ladder"||v==="ladderitem"||v==="charex"||v==="plan"||v==="profile"||v==="settings"||v==="reception"||v==="diploma"||v==="install")?"block":"none";
+ document.getElementById("backBtn").style.display=(v==="module"||v==="lesson"||v==="premium"||v==="test"||v==="cases"||v==="case"||v==="special"||v==="specialplay"||v==="path"||v==="pathstep"||v==="planner"||v==="ladder"||v==="ladderitem"||v==="charex"||v==="plan"||v==="profile"||v==="settings"||v==="reception"||v==="diploma"||v==="install")?"block":"none";
  document.querySelectorAll("#nav button").forEach(b=>b.classList.toggle("active",b.dataset.go===v||(v==="plan"&&b.dataset.go==="tools")||(v==="test"&&b.dataset.go==="tests")||((v==="reception"||v==="diploma")&&b.dataset.go==="help")||((v==="path"||v==="pathstep"||v==="planner"||v==="ladder"||v==="ladderitem"||v==="charex")&&b.dataset.go==="paths")));
  window.scrollTo({top:0,behavior:"instant"});
  syncHistory(v);
@@ -2733,6 +2755,8 @@ document.getElementById("diplomaZoomBtn").onclick=()=>{
 document.getElementById("backBtn").onclick=()=>{
  if(current==="premium"){renderCourse();show("course");}
  else if(current==="test"){renderTests();show("tests");}
+ else if(current==="case"){renderCases();show("cases");}
+ else if(current==="cases"){show("home");}
  else if(current==="special"){show(window.__specialFrom==="course"?"course":"home");}
  else if(current==="specialplay"){renderSpecial();show("special");}
  else if(current==="planner"&&curPlannerPath){renderPath(curPlannerPath);show("path");}
@@ -4509,6 +4533,67 @@ async function cloudSync(opts){
 window.addEventListener("online",()=>cloudSync());
 document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="hidden"&&cloudTimer) cloudSync({keepalive:true}); });
 
+/* ===== PSIXOLOGIK KEYSLAR =====
+   Keyslar serverda (/api/cases): vaziyat va savol hammaga, tahlil — obunachiga yoki bepul keysda.
+   Yangi keyslarni bot har dushanba/payshanba AI bilan yozadi, doktor tasdiqlagach shu yerda chiqadi.
+   Oxirgi ro'yxat telefonda saqlanadi (internetsiz ham ochiladi). */
+let CASES=null, curCase=null;
+const CASE_NEW_MS=7*864e5;   // 7 kundan yangi keys — «YANGI» belgisi
+function escH(t){ return String(t==null?"":t).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+async function loadCases(){
+ if(!CASES){ try{ CASES=JSON.parse((await Store.get("casesCache"))||"null"); }catch(e){} }
+ if(!backendReady()) return CASES;
+ try{
+  const deviceId=await getDeviceId();
+  const r=await fetch(BACKEND_URL+"/api/cases?deviceId="+encodeURIComponent(deviceId),{cache:"no-store"});
+  if(r.ok){ const j=await r.json(); if(Array.isArray(j.cases)){ CASES=j.cases; await Store.set("casesCache",JSON.stringify(CASES)); } }
+ }catch(e){ /* internet yo'q — saqlangan ro'yxat */ }
+ return CASES;
+}
+async function openCases(){
+ renderCases(); show("cases");
+ await loadCases();
+ if(current==="cases") renderCases();
+}
+function renderCases(){
+ const el=document.getElementById("casesList"); if(!el) return;
+ if(!CASES){ el.innerHTML='<p class="lead">Keyslar yuklanmoqda...</p>'; return; }
+ if(!CASES.length){ el.innerHTML='<p class="lead">Hozircha keyslar yo\'q. Tez orada qo\'shiladi.</p>'; return; }
+ el.innerHTML="";
+ CASES.forEach(c=>{
+  const yangi=Date.now()-(c.publishedAt||0)<CASE_NEW_MS;
+  const d=document.createElement("div"); d.className="mod"+(c.locked?" locked":"");
+  d.innerHTML=`<div class="idx" style="background:var(--sage-soft);color:var(--sage)">${c.locked
+     ?'<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg>'
+     :'<svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6l1 4H8z"/><rect x="4" y="7" width="16" height="14" rx="3"/><path d="M9 12h6M9 16h4"/></svg>'}</div>
+   <div class="meta"><h3>${yangi?'<b class="new-badge">YANGI</b> ':''}${c.locked?'<b class="pro-badge">PRO</b> ':''}${escH(c.title)}</h3><p>${escH(c.teaser)}</p></div>
+   <div class="chev">›</div>`;
+  d.onclick=()=>{ curCase=c; renderCase(); show("case"); };
+  el.appendChild(d);
+ });
+}
+function renderCase(){
+ const c=curCase, el=document.getElementById("view-case"); if(!c||!el) return;
+ const p=a=>(a||[]).map(t=>`<p>${escH(t)}</p>`).join("");
+ el.innerHTML=`<span class="eyebrow">Psixologik keys</span>
+  <div class="h-display">${escH(c.title)}</div>
+  <div class="case-sec">Vaziyat</div>${p(c.situation)}
+  <div class="case-q"><b>Siz qanday o'ylaysiz?</b>${escH(c.question)}</div>
+  <p class="tiny" style="text-align:left">Avval o'zingiz javob topishga harakat qiling, keyin tahlilni oching.</p>
+  <button class="btn btn-primary btn-block" id="caseReveal">${c.locked?"🔒 Tahlil obunachilar uchun":"Tahlilni ko'rish"}</button>
+  <div id="caseAnalysis" style="display:none">
+   <div class="case-sec">Doktor tahlili</div>${p(c.analysis)}
+   <div class="case-sec">Xulosa</div><ul class="case-take">${(c.takeaways||[]).map(t=>`<li>${escH(t)}</li>`).join("")}</ul>
+   ${c.related?`<p class="tiny" style="text-align:left">Batafsil: ${escH(c.related)}</p>`:""}
+  </div>
+  <p class="tiny">Keys umumlashtirilgan va ta'limiy maqsadda yozilgan, tashxis va davolash o'rnini bosmaydi.</p>`;
+ document.getElementById("caseReveal").onclick=()=>{
+  if(c.locked){ renderPremium(); show("premium"); return; }
+  document.getElementById("caseAnalysis").style.display="";
+  document.getElementById("caseReveal").style.display="none";
+ };
+}
+
 /* ---------- Toast ---------- */
 let toTimer=null;
 function toast(t){const el=document.getElementById("toast");el.textContent=t;el.classList.add("show");clearTimeout(toTimer);toTimer=setTimeout(()=>el.classList.remove("show"),2200);}
@@ -4516,6 +4601,7 @@ function toast(t){const el=document.getElementById("toast");el.textContent=t;el.
 /* ---------- Ishga tushirish ---------- */
 /* ---------- Ishga tushirish ---------- */
 document.getElementById("homeTestGo").onclick=()=>{renderTests();show("tests");};
+document.getElementById("homeCasesGo").onclick=()=>{openCases();};
 document.getElementById("homeSpecialGo").onclick=()=>{window.__specialFrom="home";renderSpecial();show("special");};
 document.getElementById("courseSpecialGo").onclick=()=>{window.__specialFrom="course";renderSpecial();show("special");};
 function renderAll(){renderHomeInstall();renderHomePushPrompt();refreshProgress();renderHomeProBanner();renderHomeMods();renderCourse();renderHomeReminder();renderHomeLadderReminder();renderHomeGoalsReminder();renderHomeCharexReminder();renderHomePlanReminder();renderPlanEntry();}

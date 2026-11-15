@@ -14,6 +14,7 @@ GitHub Pages. Domen: app.oromlife.uz (CNAME). Ilova: `orom-app/index.html` — B
 - «Kurs videolari» kartasi ham bosh sahifada, ham Kurs bo'limida (eng tepada) turadi. «To'lovlar tarixi» yo'q.
 - Meta Pixel (ID 1699786344853527) head'da; Play rejimida o'chiq. Hodisalar `oromTrack` orqali.
 - Play rejimi (`?play=1` / android-app): to'lov tugmalari yashirin (do'kon siyosati).
+- «🧩 Psixologik keyslar» (bosh sahifadagi karta → `cases` / `case` ko'rinishlari): keyslar backend `/api/cases` dan, telefonda `casesCache` da saqlanadi. Vaziyat va savol hammaga, tahlil obunachiga (qulfli bo'lsa Premium sahifasiga). Keys matni ilova faylida YO'Q.
 - Tekshirish: skriptlarni ajratib `node --check`; jsdom bilan sinash mumkin.
 
 ## Umumiy qoidalar
